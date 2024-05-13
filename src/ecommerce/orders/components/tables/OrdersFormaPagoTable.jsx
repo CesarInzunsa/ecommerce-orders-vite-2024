@@ -17,59 +17,29 @@ import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 // Columns Table Definition.
 const columns = [
     {
-        accessorKey: "IdProdServOK",
-        header: "Id Producto/Servicio OK",
-        size: 30,
+        accessorKey: "IdTipoPagoOk",
+        header: "Id Tipo Pago",
+        size: 30, //small column
     },
     {
-        accessorKey: "IdPresentaOK",
-        header: "Id Presentación OK",
-        size: 30,
+        accessorKey: "MontoPagado",
+        header: "Monto Pagado",
+        size: 30, //small column
     },
     {
-        accessorKey: "DesPresentaPS",
-        header: "Descripción Presentación",
-        size: 150,
+        accessorKey: "MontoRecibido",
+        header: "Monto Recibido",
+        size: 150, //small column
     },
     {
-        accessorKey: "Cantidad",
-        header: "Cantidad",
-        size: 150,
-    },
-    {
-        accessorKey: "PrecioUniSinIVA",
-        header: "Precio Unidad Sin IVA",
-        size: 150,
-    },
-    {
-        accessorKey: "PrecioUniConIVA",
-        header: "Precio Unidad Con IVA",
-        size: 150,
-    },
-    {
-        accessorKey: "PorcentajeIVA",
-        header: "Porcentaje IVA",
-        size: 150,
-    },
-    {
-        accessorKey: "MontoUniIVA",
-        header: "Monto Unidad IVA",
-        size: 150,
-    },
-    {
-        accessorKey: "SubTotalSinIVA",
-        header: "SubTotal Sin IVA",
-        size: 150,
-    },
-    {
-        accessorKey: "SubTotalConIVA",
-        header: "Subtotal Con IVA",
-        size: 50,
-    },
+        accessorKey: "MontoDevuelto",
+        header: "Monto Devuelto",
+        size: 150, //small column
+    }
 ];
 
 // Table - FrontEnd.
-const OrdersDetallesTable = ({setDatosSecSubdocDetalles, datosSeleccionados}) => {
+const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}) => {
 
     // controlar el estado del indicador (loading).
     const [loadingTable, setLoadingTable] = useState(true);
@@ -86,9 +56,9 @@ const OrdersDetallesTable = ({setDatosSecSubdocDetalles, datosSeleccionados}) =>
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
         // Accede a los datos necesarios del registro (rowData) y llama a tu método
-        const {IdProdServOK, IdPresentaOK} = rowData.original;
+        const {IdOrdenOK, IdOrdenBK, IdTipoOrdenOK} = rowData.original;
         // Actualizar el estado de los datos seleccionados
-        setDatosSecSubdocDetalles({IdProdServOK, IdPresentaOK});
+        setDatosSecSubdocProveedores({IdOrdenOK, IdOrdenBK, IdTipoOrdenOK});
     };
 
     async function fetchData() {
@@ -104,7 +74,7 @@ const OrdersDetallesTable = ({setDatosSecSubdocDetalles, datosSeleccionados}) =>
 
             // Obtener los datos
             const ordersData = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
-            setOrdersData(ordersData.detalle_ps);
+            setOrdersData(ordersData.forma_pago);
 
             // Cambiar el estado del indicador (loading) a false.
             setLoadingTable(false);
@@ -175,4 +145,4 @@ const OrdersDetallesTable = ({setDatosSecSubdocDetalles, datosSeleccionados}) =>
     );
 };
 
-export default OrdersDetallesTable;
+export default OrdersFormaPagoTable;

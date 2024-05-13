@@ -2,11 +2,9 @@ import {Box} from "@mui/material";
 import {useState} from "react";
 //
 import OrdenesDetallesNavTab from "./OrdenesDetallesNavTab.jsx";
-import OrdenesDetallesEstatusF from "./OrdenesDetallesEstatusF.jsx";
-import OrdenesDetallesEstatusV from "./OrdenesDetallesEstatusV.jsx";
-import OrdenesDetallesEstatusU from "./OrdenesDetallesEstatusU.jsx";
-import OrdenesDetallesInfo from "./OrdenesDetallesInfo.jsx";
-import OrdenesDetallesPAQ from "./OrdenesDetallesPAQ.jsx";
+import OrdenesDetallesEstatus from "./OrdenesDetallesEstatus.jsx";
+import OrdenesDetallesInfoAd from "./OrdenesDetallesInfoAd.jsx";
+import OrdenesDetallesPaquete from "./OrdenesDetallesPaquete.jsx";
 import OrdenesDetalles from "./OrdenesDetalles.jsx";
 
 export default function OrdenesDetallesTab({datosSeleccionados, setDatosSeleccionados}) {
@@ -38,36 +36,22 @@ export default function OrdenesDetallesTab({datosSeleccionados, setDatosSeleccio
                 />
             }
 
-            {currentNameTabInBusinessTab == "ESTATUS-F" &&
-                <OrdenesDetallesEstatusF
+            {currentNameTabInBusinessTab == "ESTATUS" &&
+                <OrdenesDetallesEstatus
                     datosSecSubdocDetalles={datosSecSubdocDetalles}
                     datosSeleccionados={datosSeleccionados}
                 />
             }
 
-            {currentNameTabInBusinessTab == "ESTATUS-V" &&
-                <OrdenesDetallesEstatusV
+            {currentNameTabInBusinessTab == "INFO AD" &&
+                <OrdenesDetallesInfoAd
                     datosSecSubdocDetalles={datosSecSubdocDetalles}
                     datosSeleccionados={datosSeleccionados}
                 />
             }
 
-            {currentNameTabInBusinessTab == "ESTATUS-U" &&
-                <OrdenesDetallesEstatusU
-                    datosSecSubdocDetalles={datosSecSubdocDetalles}
-                    datosSeleccionados={datosSeleccionados}
-                />
-            }
-
-            {currentNameTabInBusinessTab == "INFO" &&
-                <OrdenesDetallesInfo
-                    datosSecSubdocDetalles={datosSecSubdocDetalles}
-                    datosSeleccionados={datosSeleccionados}
-                />
-            }
-
-            {currentNameTabInBusinessTab == "PAQ" &&
-                <OrdenesDetallesPAQ
+            {currentNameTabInBusinessTab == "PAQUETE" &&
+                <OrdenesDetallesPaquete
                     datosSecSubdocDetalles={datosSecSubdocDetalles}
                     datosSeleccionados={datosSeleccionados}
                 />

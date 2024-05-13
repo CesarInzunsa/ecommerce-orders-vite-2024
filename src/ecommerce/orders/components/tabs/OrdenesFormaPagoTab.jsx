@@ -1,14 +1,13 @@
 import {Box} from "@mui/material";
 import {useState} from "react";
 //
-import OrdenesProveedoresEstatus from "./OrdenesProveedoresEstatus.jsx";
+import OrdenesFormaPagoInfoAdTab from "./OrdenesFormaPagoInfoAdTab.jsx";
 import OrdenesProveedoresNavTab from "./OrdenesProveedoresNavTab.jsx";
-import OrdenesProveedores from "./OrdenesProveedores.jsx";
+import OrdenesFormaPago from "./OrdenesFormaPago.jsx";
 import OrdenesProveedoresInfoAd from "./OrdenesProveedoresInfoAd.jsx";
-import OrdenesProveedoresDetallesNavTab from "./OrdenesProveedoresDetallesNavTab.jsx";
 import OrdenesProveedoresDetallesTab from "./OrdenesProveedoresDetallesTab.jsx";
 
-export default function OrdenesProveedoresTab({datosSeleccionados, setDatosSeleccionados}) {
+export default function OrdenesFormaPagoTab({datosSeleccionados, setDatosSeleccionados}) {
 
     // indicamos que al iniciar no hay ningun Instituto seleccionado.
     const [currentRowInProveedoresTab, setCurrentRowInProveedoresTab] = useState(1);
@@ -30,37 +29,16 @@ export default function OrdenesProveedoresTab({datosSeleccionados, setDatosSelec
                 setCurrentNameTabInProveedoresTab={setCurrentNameTabInProveedoresTab}
             />
 
-            {currentNameTabInProveedoresTab == "PROVEEDOR" &&
-                <OrdenesProveedores
+            {currentNameTabInProveedoresTab == "FORMA PAGO" &&
+                <OrdenesFormaPago
                     setDatosSecSubdocProveedores={setDatosSecSubdocProveedores}
                     datosSeleccionados={datosSeleccionados}
                 />
             }
 
-            {currentNameTabInProveedoresTab == "ESTATUS" &&
-                <OrdenesProveedoresEstatus
-                    datosSecSubdocProveedores={datosSecSubdocProveedores}
-                    datosSeleccionados={datosSeleccionados}
-                />
-            }
-
             {currentNameTabInProveedoresTab == "INFO AD" &&
-                <OrdenesProveedoresInfoAd
+                <OrdenesFormaPagoInfoAdTab
                     datosSecSubdocProveedores={datosSecSubdocProveedores}
-                    datosSeleccionados={datosSeleccionados}
-                />
-            }
-
-            {currentNameTabInProveedoresTab == "DETALLES" &&
-                <OrdenesProveedoresDetallesTab
-                    datosSecSubdocDetalles={datosSecSubdocProveedores}
-                    datosSeleccionados={datosSeleccionados}
-                />
-            }
-
-            {currentNameTabInProveedoresTab == "FORMA PAGO" &&
-                <OrdenesProveedoresEstatus
-                    datosSecSubdocDetalles={datosSecSubdocProveedores}
                     datosSeleccionados={datosSeleccionados}
                 />
             }

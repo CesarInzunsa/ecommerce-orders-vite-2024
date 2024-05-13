@@ -17,18 +17,23 @@ import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 // Columns Table Definition.
 const columns = [
     {
-        accessorKey: "IdTipoEstatusOK",
-        header: "Id Tipo Estatus OK",
+        accessorKey: "Etiqueta",
+        header: "Etiqueta",
         size: 30, //small column
     },
     {
-        accessorKey: "Actual",
-        header: "Actual",
+        accessorKey: "IdSeccionOK",
+        header: "Id Seccion OK",
         size: 30, //small column
     },
     {
-        accessorKey: "Observacion",
-        header: "Observacion",
+        accessorKey: "Seccion",
+        header: "Seccion",
+        size: 150, //small column
+    },
+    {
+        accessorKey: "Secuencia",
+        header: "Secuencia",
         size: 150, //small column
     },
 ];
@@ -40,12 +45,12 @@ function getDatosFiltrados(OneProductData, datosSecSubdocumentoPresenta) {
 
     // Obtener el primer elemento filtrado (si existe)
     return resultadoFiltrado.length > 0
-        ? resultadoFiltrado[0].pedidos_detalle_ps_estatus_f
+        ? resultadoFiltrado[0].info_ad
         : null;
 }
 
 // Table - FrontEnd.
-const OrdersDetallesEstatusFTable = ({datosSecSubdocDetalles, datosSeleccionados}) => {
+const OrdersFormaPagoInfoAdTable = ({datosSecSubdocProveedores, datosSeleccionados}) => {
 
     // controlar el estado del indicador (loading).
     const [loadingTable, setLoadingTable] = useState(true);
@@ -81,7 +86,7 @@ const OrdersDetallesEstatusFTable = ({datosSecSubdocDetalles, datosSeleccionados
             // Obtener los datos
             const ordersData = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
 
-            const datosFiltrados = getDatosFiltrados(ordersData.ordenes_detalle, datosSecSubdocDetalles);
+            const datosFiltrados = getDatosFiltrados(ordersData.forma_pago, datosSecSubdocProveedores);
             setOrdersData(datosFiltrados);
 
             // Cambiar el estado del indicador (loading) a false.
@@ -153,4 +158,4 @@ const OrdersDetallesEstatusFTable = ({datosSecSubdocDetalles, datosSeleccionados
     );
 };
 
-export default OrdersDetallesEstatusFTable;
+export default OrdersFormaPagoInfoAdTable;

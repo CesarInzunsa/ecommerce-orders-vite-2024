@@ -1,7 +1,7 @@
 import {Box, Tabs, Tab} from "@mui/material";
 import React, {useState} from "react";
 
-const ordersTabs = ["Proveedor", "Estatus", "Info ad", "Detalles", "Forma pago"];
+const ordersTabs = ["Forma pago", "Info ad",];
 
 const OrdenesProveedoresNavTab = ({currentRowInProveedoresTab, setCurrentNameTabInProveedoresTab}) => {
 
@@ -11,20 +11,11 @@ const OrdenesProveedoresNavTab = ({currentRowInProveedoresTab, setCurrentNameTab
         setCurrentNameTabInProveedoresTab(e.target.innerText.toUpperCase());
 
         switch (e.target.innerText.toUpperCase()) {
-            case "PROVEEDOR":
+            case "FORMA PAGO":
                 setCurrentTabIndex(0);
                 break;
-            case "ESTATUS":
-                setCurrentTabIndex(1);
-                break;
             case "INFO AD":
-                setCurrentTabIndex(2);
-                break;
-            case "DETALLES":
-                setCurrentTabIndex(3);
-                break;
-            case "FORMA PAGO":
-                setCurrentTabIndex(4);
+                setCurrentTabIndex(1);
                 break;
         }
 

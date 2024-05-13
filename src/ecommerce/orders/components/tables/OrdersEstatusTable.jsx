@@ -69,7 +69,7 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
 
             // Obtener los datos
             const ordersData = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
-            setOrdersData(ordersData.ordenes_estatus);
+            setOrdersData(ordersData.estatus);
 
             // Cambiar el estado del indicador (loading) a false.
             setLoadingTable(false);

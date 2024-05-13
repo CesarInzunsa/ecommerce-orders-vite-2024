@@ -40,12 +40,12 @@ function getDatosFiltrados(OneProductData, datosSecSubdocumentoPresenta) {
 
     // Obtener el primer elemento filtrado (si existe)
     return resultadoFiltrado.length > 0
-        ? resultadoFiltrado[0].pedidos_detalle_ps_estatus_v
+        ? resultadoFiltrado[0].estatus
         : null;
 }
 
 // Table - FrontEnd.
-const OrdersDetallesEstatusVTable = ({datosSecSubdocDetalles, datosSeleccionados}) => {
+const OrdersDetallesEstatusTable = ({datosSecSubdocDetalles, datosSeleccionados}) => {
 
     // controlar el estado del indicador (loading).
     const [loadingTable, setLoadingTable] = useState(true);
@@ -58,14 +58,6 @@ const OrdersDetallesEstatusVTable = ({datosSecSubdocDetalles, datosSeleccionados
 
     // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
     const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
-
-    // // Función para manejar el clic en una fila
-    // const sendDataRow = (rowData) => {
-    //     // Accede a los datos necesarios del registro (rowData) y llama a tu método
-    //     const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = rowData.original;
-    //     // Actualizar el estado de los datos seleccionados
-    //     setDatosSeleccionados({IdInstitutoOK, IdNegocioOK, IdOrdenOK});
-    // };
 
     async function fetchData() {
         try {
@@ -81,7 +73,7 @@ const OrdersDetallesEstatusVTable = ({datosSecSubdocDetalles, datosSeleccionados
             // Obtener los datos
             const ordersData = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
 
-            const datosFiltrados = getDatosFiltrados(ordersData.ordenes_detalle, datosSecSubdocDetalles);
+            const datosFiltrados = getDatosFiltrados(ordersData.detalle_ps, datosSecSubdocDetalles);
             setOrdersData(datosFiltrados);
 
             // Cambiar el estado del indicador (loading) a false.
@@ -103,13 +95,6 @@ const OrdersDetallesEstatusVTable = ({datosSecSubdocDetalles, datosSeleccionados
                     initialState={{density: "compact", showGlobalFilter: true}}
                     data={ordersData}
                     state={{isLoading: loadingTable}}
-                    // enableMultiRowSelection={false}
-                    // enableRowSelection={true}
-                    // muiTableBodyRowProps={({row}) => ({
-                    //     onClick: row.getToggleSelectedHandler(),
-                    //     onClickCapture: () => sendDataRow(row),
-                    //     sx: {cursor: 'pointer'},
-                    // })}
                     renderTopToolbarCustomActions={() => (
                         <>
                             {/* ------- BARRA DE ACCIONES ------ */}
@@ -153,4 +138,4 @@ const OrdersDetallesEstatusVTable = ({datosSecSubdocDetalles, datosSeleccionados
     );
 };
 
-export default OrdersDetallesEstatusVTable;
+export default OrdersDetallesEstatusTable;

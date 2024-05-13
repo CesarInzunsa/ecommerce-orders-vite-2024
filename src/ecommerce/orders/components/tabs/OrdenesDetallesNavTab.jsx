@@ -1,7 +1,7 @@
 import {Box, Tab, Tabs, Stack} from "@mui/material";
 import React, {useState} from "react";
 
-const BusinessTabs = ["detalles","estatus-f", "estatus-v", "estatus-u", "info", "paq"];
+const BusinessTabs = ["detalles","estatus", "info ad", "paquete"];
 
 const OrdenesDetallesNavTab = ({currentRowInBusinessTab, setCurrentNameTabInBusinessTab}) => {
     const [currenTabIndex, setCurrentTabIndex] = useState(0);
@@ -13,20 +13,14 @@ const OrdenesDetallesNavTab = ({currentRowInBusinessTab, setCurrentNameTabInBusi
             case "DETALLES":
                 setCurrentTabIndex(0);
                 break;
-            case "ESTATUS-F":
+            case "ESTATUS":
                 setCurrentTabIndex(1);
                 break;
-            case "ESTATUS-V":
+            case "INFO AD":
                 setCurrentTabIndex(2);
                 break;
-            case "ESTATUS-U":
+            case "PAQUETE":
                 setCurrentTabIndex(3);
-                break;
-            case "INFO":
-                setCurrentTabIndex(4);
-                break;
-            case "PAQ":
-                setCurrentTabIndex(5);
                 break;
         }
     };

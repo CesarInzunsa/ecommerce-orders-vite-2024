@@ -1,10 +1,10 @@
 import {Box} from "@mui/material";
-import OrdersProveedoresTable from "../tables/OrdersProveedoresTable.jsx";
+import OrdersFormaPagoTable from "../tables/OrdersFormaPagoTable.jsx";
 
-export default function OrdenesProveedores({datosSeleccionados, setDatosSecSubdocProveedores}) {
+export default function OrdenesFormaPago({datosSeleccionados, setDatosSecSubdocProveedores}) {
     return (
         <Box>
-            <OrdersProveedoresTable
+            <OrdersFormaPagoTable
                 datosSeleccionados={datosSeleccionados}
                 setDatosSecSubdocProveedores={setDatosSecSubdocProveedores}
             />

@@ -17,20 +17,36 @@ import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 // Columns Table Definition.
 const columns = [
     {
-        accessorKey: "IdTipoEstatusOK",
-        header: "Id Tipo Estatus OK",
+        accessorKey: "IdEtiquetaOK",
+        header: "Id Tipo Etiqueta OK",
         size: 30, //small column
     },
     {
-        accessorKey: "Actual",
-        header: "Actual",
+        accessorKey: "IdEtiqueta",
+        header: "Id Etiqueta",
         size: 30, //small column
     },
     {
-        accessorKey: "Observacion",
-        header: "Observacion",
+        accessorKey: "Valor",
+        header: "Valor",
         size: 150, //small column
     },
+    {
+        accessorKey: "IdTipoSeccionOK",
+        header: "Id Tipo Seccion OK",
+        size: 150, //small column
+    },
+    {
+        accessorKey: "Seccion",
+        header: "Seccion",
+        size: 150, //small column
+    },
+    {
+        accessorKey: "Secuencia",
+        header: "Secuencia",
+        size: 150, //small column
+    },
+
 ];
 
 function getDatosFiltrados(OneProductData, datosSecSubdocumentoPresenta) {
@@ -40,12 +56,12 @@ function getDatosFiltrados(OneProductData, datosSecSubdocumentoPresenta) {
 
     // Obtener el primer elemento filtrado (si existe)
     return resultadoFiltrado.length > 0
-        ? resultadoFiltrado[0].pedidos_detalle_ps_estatus_u
+        ? resultadoFiltrado[0].info_ad
         : null;
 }
 
 // Table - FrontEnd.
-const OrdersDetallesEstatusUTable = ({datosSecSubdocDetalles, datosSeleccionados}) => {
+const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados}) => {
 
     // controlar el estado del indicador (loading).
     const [loadingTable, setLoadingTable] = useState(true);
@@ -81,7 +97,7 @@ const OrdersDetallesEstatusUTable = ({datosSecSubdocDetalles, datosSeleccionados
             // Obtener los datos
             const ordersData = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
 
-            const datosFiltrados = getDatosFiltrados(ordersData.ordenes_detalle, datosSecSubdocDetalles);
+            const datosFiltrados = getDatosFiltrados(ordersData.detalle_ps, datosSecSubdocDetalles);
             setOrdersData(datosFiltrados);
 
             // Cambiar el estado del indicador (loading) a false.
@@ -153,4 +169,4 @@ const OrdersDetallesEstatusUTable = ({datosSecSubdocDetalles, datosSeleccionados
     );
 };
 
-export default OrdersDetallesEstatusUTable;
+export default OrdersDetallesInfoAdTable;

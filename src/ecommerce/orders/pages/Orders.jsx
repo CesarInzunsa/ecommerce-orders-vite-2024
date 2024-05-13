@@ -5,7 +5,7 @@ import OrdenesEstatusTab from "../components/tabs/OrdenesEstatusTab.jsx";
 import OrdenesTab from "../components/tabs/OrdenesTab.jsx";
 import OrdenesInfo from "../components/tabs/OrdenesInfo.jsx";
 import OrdenesDetallesTab from "../components/tabs/OrdenesDetallesTab.jsx";
-import OrdenesProveedoresTab from "../components/tabs/OrdenesProveedoresTab.jsx";
+import OrdenesFormaPagoTab from "../components/tabs/OrdenesFormaPagoTab.jsx";
 
 export default function Orders() {
 
@@ -53,8 +53,8 @@ export default function Orders() {
                     setDatosSeleccionados={setDatosSeleccionados}
                 />
             }
-            {currentNameTabInPrincipalTab == "PROVEEDOR" &&
-                <OrdenesProveedoresTab
+            {currentNameTabInPrincipalTab == "FORMA PAGO" &&
+                <OrdenesFormaPagoTab
                     datosSeleccionados={datosSeleccionados}
                     setDatosSeleccionados={setDatosSeleccionados}
                 />

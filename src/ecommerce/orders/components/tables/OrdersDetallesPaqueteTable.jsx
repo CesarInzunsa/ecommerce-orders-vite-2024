@@ -17,24 +17,40 @@ import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 // Columns Table Definition.
 const columns = [
     {
-        accessorKey: "IdOrdenOK",
-        header: "Id Orden OK",
+        accessorKey: "IdPresentaOK",
+        header: "Id Presenta OK",
         size: 30, //small column
     },
     {
-        accessorKey: "IdOrdenBK",
-        header: "Id Orden BK",
+        accessorKey: "DesPresenta",
+        header: "Descripcion Presenta",
         size: 30, //small column
     },
     {
-        accessorKey: "IdTipoOrdenOK",
-        header: "Tipo Orden OK",
+        accessorKey: "Cantidad",
+        header: "Cantidad",
         size: 150, //small column
-    }
+    },
+    {
+        accessorKey: "Precio",
+        header: "Precio",
+        size: 150, //small column
+    },
 ];
 
+function getDatosFiltrados(OneProductData, datosSecSubdocumentoPresenta) {
+    const resultadoFiltrado = OneProductData.filter(elemento => (
+        elemento.IdProdServOK === datosSecSubdocumentoPresenta.IdProdServOK && elemento.IdPresentaOK === datosSecSubdocumentoPresenta.IdPresentaOK
+    ));
+
+    // Obtener el primer elemento filtrado (si existe)
+    return resultadoFiltrado.length > 0
+        ? resultadoFiltrado[0].paquete
+        : null;
+}
+
 // Table - FrontEnd.
-const OrdersProveedoresTable = ({setDatosSecSubdocProveedores, datosSeleccionados}) => {
+const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}) => {
 
     // controlar el estado del indicador (loading).
     const [loadingTable, setLoadingTable] = useState(true);
@@ -48,13 +64,13 @@ const OrdersProveedoresTable = ({setDatosSecSubdocProveedores, datosSeleccionado
     // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
     const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
 
-    // Función para manejar el clic en una fila
-    const sendDataRow = (rowData) => {
-        // Accede a los datos necesarios del registro (rowData) y llama a tu método
-        const {IdOrdenOK, IdOrdenBK, IdTipoOrdenOK} = rowData.original;
-        // Actualizar el estado de los datos seleccionados
-        setDatosSecSubdocProveedores({IdOrdenOK, IdOrdenBK, IdTipoOrdenOK});
-    };
+    // // Función para manejar el clic en una fila
+    // const sendDataRow = (rowData) => {
+    //     // Accede a los datos necesarios del registro (rowData) y llama a tu método
+    //     const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = rowData.original;
+    //     // Actualizar el estado de los datos seleccionados
+    //     setDatosSeleccionados({IdInstitutoOK, IdNegocioOK, IdOrdenOK});
+    // };
 
     async function fetchData() {
         try {
@@ -69,7 +85,9 @@ const OrdersProveedoresTable = ({setDatosSecSubdocProveedores, datosSeleccionado
 
             // Obtener los datos
             const ordersData = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
-            setOrdersData(ordersData.ordenes_proveedor);
+
+            const datosFiltrados = getDatosFiltrados(ordersData.detalle_ps, datosSecSubdocDetalles);
+            setOrdersData(datosFiltrados);
 
             // Cambiar el estado del indicador (loading) a false.
             setLoadingTable(false);
@@ -90,13 +108,13 @@ const OrdersProveedoresTable = ({setDatosSecSubdocProveedores, datosSeleccionado
                     initialState={{density: "compact", showGlobalFilter: true}}
                     data={ordersData}
                     state={{isLoading: loadingTable}}
-                    enableMultiRowSelection={false}
-                    enableRowSelection={true}
-                    muiTableBodyRowProps={({row}) => ({
-                        onClick: row.getToggleSelectedHandler(),
-                        onClickCapture: () => sendDataRow(row),
-                        sx: {cursor: 'pointer'},
-                    })}
+                    // enableMultiRowSelection={false}
+                    // enableRowSelection={true}
+                    // muiTableBodyRowProps={({row}) => ({
+                    //     onClick: row.getToggleSelectedHandler(),
+                    //     onClickCapture: () => sendDataRow(row),
+                    //     sx: {cursor: 'pointer'},
+                    // })}
                     renderTopToolbarCustomActions={() => (
                         <>
                             {/* ------- BARRA DE ACCIONES ------ */}
@@ -140,4 +158,4 @@ const OrdersProveedoresTable = ({setDatosSecSubdocProveedores, datosSeleccionado
     );
 };
 
-export default OrdersProveedoresTable;
+export default OrdersDetallesPaqueteTable;
