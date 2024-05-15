@@ -4,8 +4,6 @@ import {useState} from "react";
 import OrdenesFormaPagoInfoAdTab from "./OrdenesFormaPagoInfoAdTab.jsx";
 import OrdenesProveedoresNavTab from "./OrdenesProveedoresNavTab.jsx";
 import OrdenesFormaPago from "./OrdenesFormaPago.jsx";
-import OrdenesProveedoresInfoAd from "./OrdenesProveedoresInfoAd.jsx";
-import OrdenesProveedoresDetallesTab from "./OrdenesProveedoresDetallesTab.jsx";
 
 export default function OrdenesFormaPagoTab({datosSeleccionados, setDatosSeleccionados}) {
 
@@ -13,13 +11,11 @@ export default function OrdenesFormaPagoTab({datosSeleccionados, setDatosSelecci
     const [currentRowInProveedoresTab, setCurrentRowInProveedoresTab] = useState(1);
 
     // indicamos que el estado inicial del tab page principal por default.
-    const [currentNameTabInProveedoresTab, setCurrentNameTabInProveedoresTab] = useState("PROVEEDOR");
+    const [currentNameTabInProveedoresTab, setCurrentNameTabInProveedoresTab] = useState("FORMA PAGO");
 
     // indicamos que el estado inicial de los datos del subdocumento
     const [datosSecSubdocProveedores, setDatosSecSubdocProveedores] = useState({
-        IdInstitutoOK: "0",
-        IdNegocioOK: "0",
-        IdOrdenOK: "0"
+        IdTipoPagoOk: "0"
     });
 
     return (

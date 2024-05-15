@@ -40,7 +40,7 @@ const columns = [
 
 function getDatosFiltrados(OneProductData, datosSecSubdocumentoPresenta) {
     const resultadoFiltrado = OneProductData.filter(elemento => (
-        elemento.IdProdServOK === datosSecSubdocumentoPresenta.IdProdServOK && elemento.IdPresentaOK === datosSecSubdocumentoPresenta.IdPresentaOK
+        elemento.IdTipoPagoOk === datosSecSubdocumentoPresenta.IdTipoPagoOk
     ));
 
     // Obtener el primer elemento filtrado (si existe)

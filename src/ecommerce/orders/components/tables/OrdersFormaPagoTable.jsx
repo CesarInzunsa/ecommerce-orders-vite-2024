@@ -56,9 +56,9 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
         // Accede a los datos necesarios del registro (rowData) y llama a tu método
-        const {IdOrdenOK, IdOrdenBK, IdTipoOrdenOK} = rowData.original;
+        const {IdTipoPagoOk} = rowData.original;
         // Actualizar el estado de los datos seleccionados
-        setDatosSecSubdocProveedores({IdOrdenOK, IdOrdenBK, IdTipoOrdenOK});
+        setDatosSecSubdocProveedores({IdTipoPagoOk});
     };
 
     async function fetchData() {
