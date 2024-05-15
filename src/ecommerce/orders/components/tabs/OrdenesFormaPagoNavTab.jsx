@@ -3,7 +3,7 @@ import React, {useState} from "react";
 
 const ordersTabs = ["Forma pago", "Info ad",];
 
-const OrdenesProveedoresNavTab = ({currentRowInProveedoresTab, setCurrentNameTabInProveedoresTab}) => {
+const OrdenesFormaPagoNavTab = ({currentRowInProveedoresTab, setCurrentNameTabInProveedoresTab}) => {
 
     const [currenTabIndex, setCurrentTabIndex] = useState(0);
     const handleChange = (e) => {
@@ -37,4 +37,4 @@ const OrdenesProveedoresNavTab = ({currentRowInProveedoresTab, setCurrentNameTab
         </Box>
     );
 };
-export default OrdenesProveedoresNavTab;
+export default OrdenesFormaPagoNavTab;

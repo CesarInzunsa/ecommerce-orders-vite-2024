@@ -10,9 +10,9 @@ export const ordersValues = (values) => {
     order.IdTipoOrdenOK = values.IdTipoOrdenOK;
     order.IdRolOK = values.IdRolOK;
     order.IdPersonaOK = values.IdPersonaOK;
-    order.ordenes_estatus = [];
-    order.ordenes_info_ad = [];
-    order.ordenes_detalle = [];
-    order.ordenes_proveedor = [];
+    order.estatus = [];
+    order.info_ad = [];
+    order.detalle_ps = [];
+    order.forma_pago = [];
     return order
 }

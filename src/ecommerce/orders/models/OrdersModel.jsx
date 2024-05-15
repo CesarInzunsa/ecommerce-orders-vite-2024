@@ -10,10 +10,10 @@ export function OrdersModel() {
         IdTipoOrdenOK: {type: String},
         IdRolOK: {type: String},
         IdPersonaOK: {type: String},
-        ordenes_estatus: [],
-        ordenes_info_ad: [],
-        ordenes_detalle: [],
-        ordenes_proveedor: [],
+        estatus: [],
+        info_ad: [],
+        detalle_ps: [],
+        forma_pago: [],
         detail_row: getDetailRow(),
     }
 }

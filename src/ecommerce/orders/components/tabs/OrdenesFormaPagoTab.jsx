@@ -2,7 +2,7 @@ import {Box} from "@mui/material";
 import {useState} from "react";
 //
 import OrdenesFormaPagoInfoAdTab from "./OrdenesFormaPagoInfoAdTab.jsx";
-import OrdenesProveedoresNavTab from "./OrdenesProveedoresNavTab.jsx";
+import OrdenesFormaPagoNavTab from "./OrdenesFormaPagoNavTab.jsx";
 import OrdenesFormaPago from "./OrdenesFormaPago.jsx";
 
 export default function OrdenesFormaPagoTab({datosSeleccionados, setDatosSeleccionados}) {
@@ -20,7 +20,7 @@ export default function OrdenesFormaPagoTab({datosSeleccionados, setDatosSelecci
 
     return (
         <Box>
-            <OrdenesProveedoresNavTab
+            <OrdenesFormaPagoNavTab
                 currentRowInProveedoresTab={currentRowInProveedoresTab}
                 setCurrentNameTabInProveedoresTab={setCurrentNameTabInProveedoresTab}
             />
