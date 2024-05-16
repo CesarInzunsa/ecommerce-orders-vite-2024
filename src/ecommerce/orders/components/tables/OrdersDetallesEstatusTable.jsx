@@ -13,6 +13,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
+import OrdenesDetallesEstatusModal from "../modals/patchModals/OrdenesDetallesEstatusModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -54,10 +55,7 @@ const OrdersDetallesEstatusTable = ({datosSecSubdocDetalles, datosSeleccionados}
     const [ordersData, setOrdersData] = useState([]);
 
     // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
-    const [addOrdersShowModal, setAddOrdersShowModal] = useState(false);
-
-    // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
-    const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
+    const [OrdenesDetallesEstatusShowModal, setOrdenesDetallesEstatusShowModal] = useState(false);
 
     async function fetchData() {
         try {
@@ -101,7 +99,9 @@ const OrdersDetallesEstatusTable = ({datosSecSubdocDetalles, datosSeleccionados}
                             <Stack direction="row" sx={{m: 1}}>
                                 <Box>
                                     <Tooltip title="Agregar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesDetallesEstatusShowModal(true)}
+                                        >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -133,6 +133,13 @@ const OrdersDetallesEstatusTable = ({datosSecSubdocDetalles, datosSeleccionados}
                     )}
                 />
                 {/* M O D A L E S */}
+                <OrdenesDetallesEstatusModal
+                    OrdenesDetallesEstatusShowModal={OrdenesDetallesEstatusShowModal}
+                    setOrdenesDetallesEstatusShowModal={setOrdenesDetallesEstatusShowModal}
+                    datosSeleccionados={datosSeleccionados}
+                    datosSecSubdocDetalles={datosSecSubdocDetalles}
+                    onClose={() => setOrdenesDetallesEstatusShowModal(false)}
+                />
             </Box>
         </Box>
     );
