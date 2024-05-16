@@ -15,7 +15,7 @@ import {DelOneOrder} from '../../services/remote/del/DelOneOrder.jsx';
 
 // Modals
 import AddOrdenesModal from "../modals/addModals/AddOrdenesModal.jsx";
-import PatchOrdenesModal from "../modals/patchModals/PatchOrdenesModal.jsx";
+import OrdenesModal from "../modals/patchModals/OrdenesModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -202,7 +202,7 @@ const OrdersTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                     />
                 </Dialog>
                 <Dialog open={PatchOrdenesShowModal}>
-                    <PatchOrdenesModal
+                    <OrdenesModal
                         PatchOrdenesShowModal={PatchOrdenesShowModal}
                         setPatchOrdenesShowModal={setPatchOrdenesShowModal}
                         dataRow={dataRow}

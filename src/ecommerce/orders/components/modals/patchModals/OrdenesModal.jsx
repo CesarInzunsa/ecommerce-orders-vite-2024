@@ -32,7 +32,7 @@ import MyAutoComplete from "../../../../../share/components/elements/atomos/MyAu
 import MenuItem from "@mui/material/MenuItem";
 import Autocomplete from "@mui/material/Autocomplete";
 
-const PatchOrdenesModal = ({PatchOrdenesShowModal, setPatchOrdenesShowModal, dataRow}) => {
+const OrdenesModal = ({PatchOrdenesShowModal, setPatchOrdenesShowModal, dataRow}) => {
 
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
@@ -350,4 +350,4 @@ const PatchOrdenesModal = ({PatchOrdenesShowModal, setPatchOrdenesShowModal, dat
         </Dialog>
     );
 };
-export default PatchOrdenesModal;
+export default OrdenesModal;
