@@ -195,7 +195,6 @@ const OrdenesModal = ({PatchOrdenesShowModal, setPatchOrdenesShowModal, dataRow}
                             formik.values.IdInstitutoOK = selectedValue ? selectedValue?.IdInstitutoOK : "";
                             setRefresh(!refresh);
                         }}
-                        disabled
                     />
 
                     <FormControl fullWidth margin="normal">
@@ -207,7 +206,6 @@ const OrdenesModal = ({PatchOrdenesShowModal, setPatchOrdenesShowModal, dataRow}
                             name="IdNegocioOK" // Asegúrate de que coincida con el nombre del campo
                             onBlur={formik.handleBlur}
                             disabled={!!mensajeExitoAlert}
-                            disabled
                         >
                             {etiquetaEspecifica?.cat_negocios.map((seccion) => {
                                 return (

@@ -13,6 +13,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
+import OrdenesDetallesInfoAdModal from "../modals/patchModals/OrdenesDetallesInfoAdModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -70,10 +71,7 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
     const [ordersData, setOrdersData] = useState([]);
 
     // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
-    const [addOrdersShowModal, setAddOrdersShowModal] = useState(false);
-
-    // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
-    const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
+    const [OrdenesDetallesInfoAdShowModal, setOrdenesDetallesInfoAdShowModal] = useState(false);
 
     // // Función para manejar el clic en una fila
     // const sendDataRow = (rowData) => {
@@ -132,7 +130,9 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
                             <Stack direction="row" sx={{m: 1}}>
                                 <Box>
                                     <Tooltip title="Agregar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesDetallesInfoAdShowModal(true)}
+                                        >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -164,6 +164,13 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
                     )}
                 />
                 {/* M O D A L E S */}
+                <OrdenesDetallesInfoAdModal
+                    OrdenesDetallesInfoAdShowModal={OrdenesDetallesInfoAdShowModal}
+                    setOrdenesDetallesInfoAdShowModal={setOrdenesDetallesInfoAdShowModal}
+                    datosSeleccionados={datosSeleccionados}
+                    datosSecSubdocDetalles={datosSecSubdocDetalles}
+                    onClose={() => setOrdenesDetallesInfoAdShowModal(false)}
+                />
             </Box>
         </Box>
     );
