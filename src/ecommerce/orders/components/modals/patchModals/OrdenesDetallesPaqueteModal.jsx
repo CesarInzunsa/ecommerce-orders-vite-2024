@@ -27,16 +27,15 @@ import * as Yup from "yup";
 
 //HELPERS
 import {UpdatePatchOneOrder} from "../../../services/remote/put/UpdatePatchOneOrder";
-import {OrdenesDetallesInfoAdValues} from "../../../helpers/OrdenesDetallesInfoAdValues.jsx";
+import {OrdenesDetallesPaqueteValues} from "../../../helpers/OrdenesDetallesPaqueteValues.jsx";
 import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
-import {GetAllLabels} from "../../../services/remote/get/GetAllLabels";
 
-const OrdenesDetallesInfoAdModal = ({
-                                        OrdenesDetallesInfoAdShowModal,
-                                        setOrdenesDetallesInfoAdShowModal,
-                                        datosSeleccionados,
-                                        datosSecSubdocDetalles
-                                    }) => {
+const OrdenesDetallesPaqueteModal = ({
+                                         OrdenesDetallesPaqueteShowModal,
+                                         setOrdenesDetallesPaqueteShowModal,
+                                         datosSeleccionados,
+                                         datosSecSubdocDetalles
+                                     }) => {
 
     // Declarar estados para las alertas de éxito y error
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
@@ -48,29 +47,20 @@ const OrdenesDetallesInfoAdModal = ({
     // Hook para refrescar el componente
     const [refresh, setRefresh] = useState(false);
 
-    // Hook para valores de labels y etiquetas
-    const [OrdenesValuesLabel, setOrdenesValuesLabel] = useState([]);
-
     //Para ver la data que trae el documento completo desde el dispatch de ShippingsTable
     //FIC: Definition Formik y Yup.
     const formik = useFormik({
         initialValues: {
-            IdEtiquetaOK: "",
-            IdEtiqueta: "",
-            Etiqueta: "",
-            Valor: "",
-            IdTipoSeccionOK: "",
-            Seccion: "",
-            Secuencia: "",
+            idPresentaOK: "",
+            DesPresenta: "",
+            Cantidad: "",
+            Precio: "",
         },
         validationSchema: Yup.object({
-            IdEtiquetaOK: Yup.string().required("El campo es requerido"),
-            IdEtiqueta: Yup.string().required("El campo es requerido"),
-            Etiqueta: Yup.string().required("El campo es requerido"),
-            Valor: Yup.string().required("El campo es requerido"),
-            IdTipoSeccionOK: Yup.string().required("El campo es requerido"),
-            Seccion: Yup.string().required("El campo es requerido"),
-            Secuencia: Yup.number().required("El campo es requerido"),
+            idPresentaOK: Yup.string().required("Campo requerido"),
+            DesPresenta: Yup.string().required("Campo requerido"),
+            Cantidad: Yup.number().required("Campo requerido"),
+            Precio: Yup.number().required("Campo requerido"),
         }),
         onSubmit: async (values) => {
             //FIC: mostramos el Loading.
@@ -93,24 +83,21 @@ const OrdenesDetallesInfoAdModal = ({
                     elemento.IdProdServOK === datosSecSubdocDetalles.IdProdServOK && elemento.IdPresentaOK === datosSecSubdocDetalles.IdPresentaOK
                 ));
 
-                for (let i = 0; i < ordenExistente.detalle_ps[index].info_ad.length; i++) {
+                console.log(datosSeleccionados)
+
+                for (let i = 0; i < ordenExistente.detalle_ps[index].paquete.length; i++) {
                     //console.log("Entro")
-                    ordenExistente.detalle_ps[index].info_ad[i] = {
-                        IdEtiquetaOK: ordenExistente.detalle_ps[index].info_ad[i].IdEtiquetaOK,
-                        IdEtiqueta: ordenExistente.detalle_ps[index].info_ad[i].IdEtiqueta,
-                        Etiqueta: ordenExistente.detalle_ps[index].info_ad[i].Etiqueta,
-                        Valor: ordenExistente.detalle_ps[index].info_ad[i].Valor,
-                        IdTipoSeccionOK: ordenExistente.detalle_ps[index].info_ad[i].IdTipoSeccionOK,
-                        Seccion: ordenExistente.detalle_ps[index].info_ad[i].Seccion,
-                        Secuencia: ordenExistente.detalle_ps[index].info_ad[i].Secuencia,
+                    ordenExistente.detalle_ps[index].paquete[i] = {
+                        idPresentaOK: ordenExistente.detalle_ps[index].paquete[i].idPresentaOK,
+                        DesPresenta: ordenExistente.detalle_ps[index].paquete[i].DesPresenta,
+                        Cantidad: ordenExistente.detalle_ps[index].paquete[i].Cantidad,
+                        Precio: ordenExistente.detalle_ps[index].paquete[i].Precio,
                     };
                     //console.log("Realizo", ordenExistente)
                 }
 
-                values.Actual == true ? (values.Actual = "S") : (values.Actual = "N");
-
                 // Obtener los valores de la ventana modal
-                const DetalleEstatusOrdenes = OrdenesDetallesInfoAdValues(values, ordenExistente, index);
+                const DetalleEstatusOrdenes = OrdenesDetallesPaqueteValues(values, ordenExistente, index);
 
                 // actualizar la orden
                 await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, DetalleEstatusOrdenes);
@@ -137,82 +124,58 @@ const OrdenesDetallesInfoAdModal = ({
 
     return (
         <Dialog
-            open={OrdenesDetallesInfoAdShowModal}
-            onClose={() => setOrdenesDetallesInfoAdShowModal(false)}
+            open={OrdenesDetallesPaqueteShowModal}
+            onClose={() => setOrdenesDetallesPaqueteShowModal(false)}
             fullWidth
         >
-            <form onSubmit={(e) => {
-                formik.handleSubmit(e);
-            }}>
+            <form onSubmit={formik.handleSubmit}>
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo Detalle-InfoAd a la orden</strong>
+                        <strong>Agregar Nuevo Detalle-Paquete a la orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
                 <DialogContent sx={{display: "flex", flexDirection: "column"}} dividers>
+                    {/* FIC: Campos de captura o selección */}
                     <TextField
-                        id="IdEtiquetaOK"
-                        label="IdEtiquetaOK*"
-                        value={formik.values.IdEtiquetaOK}
+                        id="idPresentaOK"
+                        label="idPresentaOK*"
+                        value={formik.values.idPresentaOK}
                         {...commonTextFieldProps}
-                        error={formik.touched.IdEtiquetaOK && Boolean(formik.errors.IdEtiquetaOK)}
-                        helperText={formik.touched.IdEtiquetaOK && formik.errors.IdEtiquetaOK}
+                        error={formik.touched.idPresentaOK && Boolean(formik.errors.idPresentaOK)}
+                        helperText={formik.touched.idPresentaOK && formik.errors.idPresentaOK}
                     />
                     <TextField
-                        id="IdEtiqueta"
-                        label="IdEtiqueta*"
-                        value={formik.values.IdEtiqueta}
+                        id="DesPresenta"
+                        label="DesPresenta*"
+                        multiline
+                        rows={4}
+                        maxRows={10}
+                        value={formik.values.DesPresenta}
                         {...commonTextFieldProps}
-                        error={formik.touched.IdEtiqueta && Boolean(formik.errors.IdEtiqueta)}
-                        helperText={formik.touched.IdEtiqueta && formik.errors.IdEtiqueta}
+                        error={formik.touched.DesPresenta && Boolean(formik.errors.DesPresenta)}
+                        helperText={formik.touched.DesPresenta && formik.errors.DesPresenta}
                     />
                     <TextField
-                        id="Etiqueta"
-                        label="Etiqueta*"
-                        value={formik.values.Etiqueta}
+                        id="Cantidad"
+                        label="Cantidad*"
+                        value={formik.values.Cantidad}
                         {...commonTextFieldProps}
-                        error={formik.touched.Etiqueta && Boolean(formik.errors.Etiqueta)}
-                        helperText={formik.touched.Etiqueta && formik.errors.Etiqueta}
+                        error={formik.touched.Cantidad && Boolean(formik.errors.Cantidad)}
+                        helperText={formik.touched.Cantidad && formik.errors.Cantidad}
                     />
                     <TextField
-                        id="Valor"
-                        label="Valor*"
-                        value={formik.values.Valor}
+                        id="Precio"
+                        label="Precio*"
+                        value={formik.values.Precio}
                         {...commonTextFieldProps}
-                        error={formik.touched.Valor && Boolean(formik.errors.Valor)}
-                        helperText={formik.touched.Valor && formik.errors.Valor}
-                    />
-                    <TextField
-                        id="IdTipoSeccionOK"
-                        label="IdTipoSeccionOK*"
-                        value={formik.values.IdTipoSeccionOK}
-                        {...commonTextFieldProps}
-                        error={formik.touched.IdTipoSeccionOK && Boolean(formik.errors.IdTipoSeccionOK)}
-                        helperText={formik.touched.IdTipoSeccionOK && formik.errors.IdTipoSeccionOK}
-                    />
-                    <TextField
-                        id="Seccion"
-                        label="Seccion*"
-                        value={formik.values.Seccion}
-                        {...commonTextFieldProps}
-                        error={formik.touched.Seccion && Boolean(formik.errors.Seccion)}
-                        helperText={formik.touched.Seccion && formik.errors.Seccion}
-                    />
-                    <TextField
-                        id="Secuencia"
-                        label="Secuencia*"
-                        value={formik.values.Secuencia}
-                        {...commonTextFieldProps}
-                        error={formik.touched.Secuencia && Boolean(formik.errors.Secuencia)}
-                        helperText={formik.touched.Secuencia && formik.errors.Secuencia}
+                        error={formik.touched.Precio && Boolean(formik.errors.Precio)}
+                        helperText={formik.touched.Precio && formik.errors.Precio}
                     />
                 </DialogContent>
                 {/* FIC: Aqui van las acciones del usuario como son las alertas o botones */}
-                <DialogActions
-                    sx={{display: 'flex', flexDirection: 'row'}}
-                >
+                <DialogActions sx={{display: 'flex', flexDirection: 'row'}}>
                     <Box m="auto">
                         {mensajeErrorAlert && (
                             <Alert severity="error">
@@ -232,7 +195,7 @@ const OrdenesDetallesInfoAdModal = ({
                         startIcon={<CloseIcon/>}
                         variant="outlined"
                         onClick={() => {
-                            setOrdenesDetallesInfoAdShowModal(false);
+                            setOrdenesDetallesPaqueteShowModal(false);
                             // reestablecer los valores de mensajes de exito y error
                             setMensajeErrorAlert(null);
                             setMensajeExitoAlert(null);
@@ -250,7 +213,8 @@ const OrdenesDetallesInfoAdModal = ({
                         startIcon={<SaveIcon/>}
                         variant="contained"
                         type="submit"
-                        disabled={formik.isSubmitting || !!mensajeExitoAlert || Loading}
+                        disabled={!!mensajeExitoAlert}
+                        loading={Loading}
                     >
                         <span>GUARDAR</span>
                     </LoadingButton>
@@ -259,4 +223,4 @@ const OrdenesDetallesInfoAdModal = ({
         </Dialog>
     );
 };
-export default OrdenesDetallesInfoAdModal;
+export default OrdenesDetallesPaqueteModal;

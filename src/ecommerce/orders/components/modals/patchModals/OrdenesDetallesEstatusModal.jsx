@@ -230,7 +230,15 @@ const OrdenesDetallesEstatusModal = ({
                         loadingPosition="start"
                         startIcon={<CloseIcon/>}
                         variant="outlined"
-                        onClick={() => setOrdenesDetallesEstatusShowModal(false)}
+                        onClick={() => {
+                            setOrdenesDetallesEstatusShowModal(false);
+                            // reestablecer los valores de mensajes de exito y error
+                            setMensajeErrorAlert(null);
+                            setMensajeExitoAlert(null);
+
+                            // Limpiar los valores del formulario
+                            formik.resetForm();
+                        }}
                     >
                         <span>CERRAR</span>
                     </LoadingButton>

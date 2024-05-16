@@ -13,11 +13,12 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
+import OrdenesDetallesPaqueteModal from "../modals/patchModals/OrdenesDetallesPaqueteModal.jsx";
 
 // Columns Table Definition.
 const columns = [
     {
-        accessorKey: "IdPresentaOK",
+        accessorKey: "idPresentaOK",
         header: "Id Presenta OK",
         size: 30, //small column
     },
@@ -59,10 +60,7 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
     const [ordersData, setOrdersData] = useState([]);
 
     // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
-    const [addOrdersShowModal, setAddOrdersShowModal] = useState(false);
-
-    // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
-    const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
+    const [OrdenesDetallesPaqueteShowModal, setOrdenesDetallesPaqueteShowModal] = useState(false);
 
     // // Función para manejar el clic en una fila
     // const sendDataRow = (rowData) => {
@@ -121,7 +119,9 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
                             <Stack direction="row" sx={{m: 1}}>
                                 <Box>
                                     <Tooltip title="Agregar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesDetallesPaqueteShowModal(true)}
+                                        >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -153,6 +153,13 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
                     )}
                 />
                 {/* M O D A L E S */}
+                <OrdenesDetallesPaqueteModal
+                    OrdenesDetallesPaqueteShowModal={OrdenesDetallesPaqueteShowModal}
+                    setOrdenesDetallesPaqueteShowModal={setOrdenesDetallesPaqueteShowModal}
+                    datosSeleccionados={datosSeleccionados}
+                    datosSecSubdocDetalles={datosSecSubdocDetalles}
+                    onClose={() => setOrdenesDetallesPaqueteShowModal(false)}
+                />
             </Box>
         </Box>
     );

@@ -6,6 +6,7 @@ export const OrdenesDetallesPaqueteValues = (values, ordenesDetallePaquete, inde
     let OrdenesDetallePaquete = ordenesDetallePaquete || OrdenesDetallesPaqueteAdModel();
     // Crear un nuevo objeto de estatus
     let nuevoDetalle = {
+        idPresentaOK: values.idPresentaOK,
         DesPresenta: values.DesPresenta,
         Cantidad: values.Cantidad,
         Precio: values.Precio,

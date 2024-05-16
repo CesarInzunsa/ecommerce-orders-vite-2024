@@ -144,19 +144,8 @@ const OrdenesEstatusModal = ({OrdenesEstatusShowModal, setOrdenesEstatusShowModa
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
-                <DialogContent
-                    sx={{display: 'flex', flexDirection: 'column'}}
-                    dividers
-                >
+                <DialogContent sx={{display: 'flex', flexDirection: 'column'}} dividers>
                     {/* FIC: Campos de captura o selección */}
-                    {/*<TextField
-                        id="IdTipoEstatusOK"
-                        label="IdTipoEstatusOK*"
-                        value={formik.values.IdTipoEstatusOK}
-                        {...commonTextFieldProps}
-                        error={ formik.touched.IdTipoEstatusOK && Boolean(formik.errors.IdTipoEstatusOK) }
-                        helperText={ formik.touched.IdTipoEstatusOK && formik.errors.IdTipoEstatusOK }
-    />*/}
                     <InputLabel htmlFor="dynamic-select-tipo-orden">Tipo de Orden</InputLabel>
                     <Select
                         id="dynamic-select-tipo-orden"
