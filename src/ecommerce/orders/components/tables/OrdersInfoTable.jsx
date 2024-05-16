@@ -13,6 +13,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
+import OrdenesInfoAdModal from '../modals/patchModals/OrdenesInfoAdModal.jsx';
 
 // Columns Table Definition.
 const columns = [
@@ -58,7 +59,7 @@ const OrdersInfoTable = ({setDatosSeleccionados, datosSeleccionados}) => {
     const [ordersData, setOrdersData] = useState([]);
 
     // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
-    const [addOrdersShowModal, setAddOrdersShowModal] = useState(false);
+    const [OrdenesInfoAdShowModal, setOrdenesInfoAdShowModal] = useState(false);
 
     // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
     const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
@@ -118,7 +119,9 @@ const OrdersInfoTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                             <Stack direction="row" sx={{m: 1}}>
                                 <Box>
                                     <Tooltip title="Agregar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesInfoAdShowModal(true)}
+                                        >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -146,6 +149,14 @@ const OrdersInfoTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                                 </Box>
                             </Stack>
                             {/* ------- BARRA DE ACCIONES FIN ------ */}
+                            <Dialog open={OrdenesInfoAdShowModal}>
+                                <OrdenesInfoAdModal
+                                    OrdenesInfoAdShowModal={OrdenesInfoAdShowModal}
+                                    setOrdenesInfoAdShowModal={setOrdenesInfoAdShowModal}
+                                    datosSeleccionados={datosSeleccionados}
+                                    onClose={() => setOrdenesInfoAdShowModal(false)}
+                                />
+                            </Dialog>
                         </>
                     )}
                 />

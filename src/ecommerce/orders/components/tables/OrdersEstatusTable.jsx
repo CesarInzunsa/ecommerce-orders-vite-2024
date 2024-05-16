@@ -13,6 +13,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
+import OrdenesEstatusModal from "../modals/patchModals/OrdenesEstatusModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -43,18 +44,16 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
     const [ordersData, setOrdersData] = useState([]);
 
     // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
-    const [addOrdersShowModal, setAddOrdersShowModal] = useState(false);
+    const [OrdenesEstatusShowModal, setOrdenesEstatusShowModal] = useState(false);
 
-    // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
-    const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
+    // Controlar la informacion seleccionada
+    const [dataRowSelected, setDataRowSelected] = useState({});
 
-    // // Función para manejar el clic en una fila
-    // const sendDataRow = (rowData) => {
-    //     // Accede a los datos necesarios del registro (rowData) y llama a tu método
-    //     const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = rowData.original;
-    //     // Actualizar el estado de los datos seleccionados
-    //     setDatosSeleccionados({IdInstitutoOK, IdNegocioOK, IdOrdenOK});
-    // };
+    // Función para manejar el clic en una fila
+    const sendDataRow = (rowData) => {
+        // Guardar la informacion seleccionada
+        setDataRowSelected(rowData.original);
+    };
 
     async function fetchData() {
         try {
@@ -90,20 +89,22 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                     initialState={{density: "compact", showGlobalFilter: true}}
                     data={ordersData}
                     state={{isLoading: loadingTable}}
-                    // enableMultiRowSelection={false}
-                    // enableRowSelection={true}
-                    // muiTableBodyRowProps={({row}) => ({
-                    //     onClick: row.getToggleSelectedHandler(),
-                    //     onClickCapture: () => sendDataRow(row),
-                    //     sx: {cursor: 'pointer'},
-                    // })}
+                    enableMultiRowSelection={false}
+                    enableRowSelection={true}
+                    muiTableBodyRowProps={({row}) => ({
+                        onClick: row.getToggleSelectedHandler(),
+                        onClickCapture: () => sendDataRow(row),
+                        sx: {cursor: 'pointer'},
+                    })}
                     renderTopToolbarCustomActions={() => (
                         <>
                             {/* ------- BARRA DE ACCIONES ------ */}
                             <Stack direction="row" sx={{m: 1}}>
                                 <Box>
                                     <Tooltip title="Agregar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesEstatusShowModal(true)}
+                                        >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -135,6 +136,17 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                     )}
                 />
                 {/* M O D A L E S */}
+                <Dialog open={OrdenesEstatusShowModal}>
+                    <OrdenesEstatusModal
+                        OrdenesEstatusShowModal={OrdenesEstatusShowModal}
+                        setOrdenesEstatusShowModal={setOrdenesEstatusShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        onClose={() => {
+                            setOrdenesEstatusShowModal(false)
+                        }}
+                    />
+
+                </Dialog>
             </Box>
         </Box>
     );
