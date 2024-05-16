@@ -19,7 +19,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import {useFormik} from "formik";
 import * as Yup from "yup";
 // Importar Services
-import {AddOneOrder} from "../../../services/remote/post/AddOneOrder.jsx";
+import {UpdatePatchOneOrder} from "../../../services/remote/put/UpdatePatchOneOrder.jsx";
 import {GetAllLabels} from "../../../services/remote/get/GetAllLabels.jsx";
 import {GetAllPersons} from "../../../services/remote/get/GetAllPersons.jsx";
 import UseInstitutos from "../../../services/remote/UseInstitutos.jsx";
@@ -32,7 +32,7 @@ import MyAutoComplete from "../../../../../share/components/elements/atomos/MyAu
 import MenuItem from "@mui/material/MenuItem";
 import Autocomplete from "@mui/material/Autocomplete";
 
-const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
+const PatchOrdenesModal = ({PatchOrdenesShowModal, setPatchOrdenesShowModal, dataRow}) => {
 
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
@@ -113,13 +113,13 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
     // Definition Formik y Yup.
     const formik = useFormik({
         initialValues: {
-            IdInstitutoOK: "",
-            IdNegocioOK: "",
-            IdOrdenOK: "",
-            IdOrdenBK: "",
-            IdTipoOrdenOK: "",
-            IdRolOK: "",
-            IdPersonaOK: "",
+            IdInstitutoOK: dataRow.IdInstitutoOK || "",
+            IdNegocioOK: dataRow.IdNegocioOK || "",
+            IdOrdenOK: dataRow.IdOrdenOK || "",
+            IdOrdenBK: dataRow.IdOrdenBK || "",
+            IdTipoOrdenOK: dataRow.IdTipoOrdenOK || "",
+            IdRolOK: dataRow.IdRolOK || "",
+            IdPersonaOK: dataRow.IdPersonaOK || "",
         },
         validationSchema: Yup.object({
             IdOrdenOK: Yup.string()
@@ -143,7 +143,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
                 // Extraer los datos de los campos de la ventana modal que ya tiene Formik.
                 const order = ordersValues(values);
                 // Llamamos al servicio para agregar una nueva orden
-                await AddOneOrder(order);
+                await UpdatePatchOneOrder(dataRow.IdInstitutoOK, dataRow.IdNegocioOK, dataRow.IdOrdenOK, order);
                 // Si no hubo errores, mostramos el mensaje de exito.
                 setMensajeExitoAlert("Orden creada y guardada correctamente");
             } catch (e) {
@@ -167,23 +167,10 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
 
     const {etiquetas, etiquetaEspecifica} = UseInstitutos({IdInstitutoOK: formik.values.IdInstitutoOK || "",});
 
-    useEffect(() => {
-        if (formik.values.IdInstitutoOK) {
-            updateIdOrdenOK(); // Actualizar IdEntregaOK al cambiar IdInstitutoOK o IdNegocioOK
-        }
-    }, [formik.values.IdInstitutoOK]);
-
-    const updateIdOrdenOK = () => {
-        formik.setFieldValue(
-            "IdOrdenOK",
-            `${formik.values.IdInstitutoOK}-${IdGen}`
-        );
-    };
-
     return (
         <Dialog
-            open={AddOrdenShowModal}
-            onClose={() => setAddOrdenShowModal(false)}
+            open={PatchOrdenesShowModal}
+            onClose={() => setPatchOrdenesShowModal(false)}
             fullWidth
         >
             <form onSubmit={formik.handleSubmit}>
@@ -200,7 +187,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
                     {/* Aqui van los campos de la ventana modal */}
                     <MyAutoComplete
                         disabled={!!mensajeExitoAlert}
-                        label="Selecciona un Instituto"
+                        label={`Selecciona un Instituto [${dataRow.IdInstitutoOK}]`}
                         options={etiquetas}
                         displayProp="IdInstitutoOK"
                         idProp="IdInstitutoOK"
@@ -208,10 +195,11 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
                             formik.values.IdInstitutoOK = selectedValue ? selectedValue?.IdInstitutoOK : "";
                             setRefresh(!refresh);
                         }}
+                        disabled
                     />
 
                     <FormControl fullWidth margin="normal">
-                        <InputLabel>Selecciona un Negocio</InputLabel>
+                        <InputLabel>{`Selecciona un Negocio [${dataRow.IdNegocioOK}]`}</InputLabel>
                         <Select
                             value={formik.values.IdNegocioOK}
                             label="Selecciona una opción"
@@ -219,6 +207,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
                             name="IdNegocioOK" // Asegúrate de que coincida con el nombre del campo
                             onBlur={formik.handleBlur}
                             disabled={!!mensajeExitoAlert}
+                            disabled
                         >
                             {etiquetaEspecifica?.cat_negocios.map((seccion) => {
                                 return (
@@ -238,7 +227,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
 
                     <TextField
                         id="IdOrdenOK"
-                        label="IdOrdenOK*"
+                        label={`IdOrdenOK* [${dataRow.IdOrdenOK}]`}
                         value={formik.values.IdOrdenOK}
                         /* onChange={formik.handleChange} */
                         {...commonTextFieldProps}
@@ -249,7 +238,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
 
                     <TextField
                         id="IdOrdenBK"
-                        label="IdOrdenBK*"
+                        label={`IdOrdenBK* [${dataRow.IdOrdenBK}]`}
                         value={formik.values.IdOrdenBK}
                         {...commonTextFieldProps}
                         error={formik.touched.IdOrdenBK && Boolean(formik.errors.IdOrdenBK)}
@@ -257,7 +246,8 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
                     />
 
                     <FormControl fullWidth margin="normal">
-                        <InputLabel htmlFor="dynamic-select-tipo-orden">Tipo de Orden</InputLabel>
+                        <InputLabel
+                            htmlFor="dynamic-select-tipo-orden">{`Tipo de Orden[${dataRow.IdTipoOrdenOK}]`}</InputLabel>
                         <Select
                             id="dynamic-select-tipo-orden"
                             value={formik.values.IdTipoOrdenOK}
@@ -275,7 +265,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
                     </FormControl>
 
                     <FormControl fullWidth margin="normal">
-                        <InputLabel htmlFor="dynamic-select-rol">Rol</InputLabel>
+                        <InputLabel htmlFor="dynamic-select-rol">{`Rol [${dataRow.IdRolOK}]`}</InputLabel>
                         <Select
                             id="dynamic-select-rol"
                             value={formik.values.IdRolOK}
@@ -304,7 +294,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
                         renderInput={(params) => (
                             <TextField
                                 {...params}
-                                label={"Selecciona una Persona"}
+                                label={`Selecciona una Persona ${dataRow.IdPersonaOK}`}
                                 error={formik.touched.IdPersonaOK && Boolean(formik.errors.IdPersonaOK)}
                                 helperText={formik.touched.IdPersonaOK && formik.errors.IdPersonaOK}
                             />
@@ -337,7 +327,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
                         loadingPosition="start"
                         startIcon={<CloseIcon/>}
                         variant="outlined"
-                        onClick={() => setAddOrdenShowModal(false)}
+                        onClick={() => setPatchOrdenesShowModal(false)}
                     >
                         <span>CERRAR</span>
                     </LoadingButton>
@@ -360,4 +350,4 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal}) => {
         </Dialog>
     );
 };
-export default AddOrdenesModal;
+export default PatchOrdenesModal;

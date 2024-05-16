@@ -11,8 +11,11 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 
 // DB
 import {getAllOrders} from '../../services/remote/get/GetAllOrders.jsx';
+import {DelOneOrder} from '../../services/remote/del/DelOneOrder.jsx';
 
 // Modals
+import AddOrdenesModal from "../modals/addModals/AddOrdenesModal.jsx";
+import PatchOrdenesModal from "../modals/patchModals/PatchOrdenesModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -53,6 +56,12 @@ const columns = [
     },
 ];
 
+// Import reutilizables
+import {
+    showMensajeConfirm,
+    showMensajeError,
+} from "../../../../share/components/elements/messages/MySwalAlerts";
+
 // Table - FrontEnd.
 const OrdersTable = ({setDatosSeleccionados, datosSeleccionados}) => {
 
@@ -62,14 +71,20 @@ const OrdersTable = ({setDatosSeleccionados, datosSeleccionados}) => {
     // controlar el estado de la data.
     const [ordersData, setOrdersData] = useState([]);
 
-    // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
-    const [addOrdersShowModal, setAddOrdersShowModal] = useState(false);
+    // Controlar el estado que muestra u oculta la modal de nueva orden
+    const [AddOrdenShowModal, setAddOrdenShowModal] = useState(false);
 
-    // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
-    const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
+    // Actualizar un subdocumento
+    const [PatchOrdenesShowModal, setPatchOrdenesShowModal] = useState(false);
+
+    // Guardar los datos seleccionados en el estado
+    const [dataRow, setDataRow] = useState();
 
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
+        // Guardar los datos seleccionados en el estado
+        setDataRow(rowData.original);
+
         // Accede a los datos necesarios del registro (rowData) y llama a tu método
         const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = rowData.original;
         // Actualizar el estado de los datos seleccionados
@@ -88,6 +103,33 @@ const OrdersTable = ({setDatosSeleccionados, datosSeleccionados}) => {
             console.error("Error al obtener la data en useEffect: ", error);
         }
     }
+
+    //Para funcion Ordenes Delete en Tabla Ordenes
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `La Orden con el ID: ${
+                (datosSeleccionados.IdOrdenOK)
+            } será eliminada, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+                //const indexToDelete = idRowSel;
+                //orden.splice(indexToDelete, 1);
+                await DelOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+                /*const dataToUpdate = {
+                  cat_prod_serv_info_ad: orden,
+                };
+
+                await updateProduct(productSel.IdProdServOK, dataToUpdate);*/
+                showMensajeConfirm("Orden eliminada con exito");
+                fetchData();
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo Eliminar la orden`);
+            }
+        }
+    };
 
     useEffect(() => {
         fetchData();
@@ -114,17 +156,23 @@ const OrdersTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                             <Stack direction="row" sx={{m: 1}}>
                                 <Box>
                                     <Tooltip title="Agregar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setAddOrdenShowModal(true)}
+                                        >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setPatchOrdenesShowModal(true)}
+                                        >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => handleDelete()}
+                                        >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -146,6 +194,24 @@ const OrdersTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                     )}
                 />
                 {/* M O D A L E S */}
+                <Dialog open={AddOrdenShowModal}>
+                    <AddOrdenesModal
+                        AddOrdenShowModal={AddOrdenShowModal}
+                        setAddOrdenShowModal={setAddOrdenShowModal}
+                        onClose={() => setAddOrdenShowModal(false)}
+                    />
+                </Dialog>
+                <Dialog open={PatchOrdenesShowModal}>
+                    <PatchOrdenesModal
+                        PatchOrdenesShowModal={PatchOrdenesShowModal}
+                        setPatchOrdenesShowModal={setPatchOrdenesShowModal}
+                        dataRow={dataRow}
+                        onClose={() => {
+                            setPatchOrdenesShowModal(false)
+                        }}
+                    />
+
+                </Dialog>
             </Box>
         </Box>
     );

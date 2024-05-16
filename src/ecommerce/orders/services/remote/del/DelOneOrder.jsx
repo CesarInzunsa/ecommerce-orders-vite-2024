@@ -2,7 +2,7 @@ import axios from "axios";
 
 export function DelOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK) {
     return new Promise((resolve, reject) => {
-        axios.post(import.meta.env.VITE_API_ORDERS_URL + '/?IdInstitutoOK=' + IdInstitutoOK + '&IdNegocioOK=' + IdNegocioOK + '&IdOrdenOK=' + IdOrdenOK)
+        axios.delete(import.meta.env.VITE_API_ORDERS_URL + '/?IdInstitutoOK=' + IdInstitutoOK + '&IdNegocioOK=' + IdNegocioOK + '&IdOrdenOK=' + IdOrdenOK)
             .then((response) => {
                 const data = response.data;
                 if (!data.success) {
