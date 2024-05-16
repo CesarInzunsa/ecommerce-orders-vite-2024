@@ -14,6 +14,7 @@ import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
 import OrdenesEstatusModal from "../modals/patchModals/OrdenesEstatusModal.jsx";
+import OrdenesUpdateEstatusModal from "../modals/updateModals/OrdenesUpdateEstatusModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -46,13 +47,16 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
     // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
     const [OrdenesEstatusShowModal, setOrdenesEstatusShowModal] = useState(false);
 
+    // controllar el estado que muestra u oculta el modal para actualizar el subdocumento.
+    const [OrdenesUpdateEstatusShowModal, setOrdenesUpdateEstatusShowModal] = useState(false);
+
     // Controlar la informacion seleccionada
-    const [dataRowSelected, setDataRowSelected] = useState({});
+    const [dataRow, setDataRow] = useState();
 
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
         // Guardar la informacion seleccionada
-        setDataRowSelected(rowData.original);
+        setDataRow(rowData.original);
     };
 
     async function fetchData() {
@@ -109,7 +113,9 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesUpdateEstatusShowModal(true)}
+                                        >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -141,6 +147,18 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                         OrdenesEstatusShowModal={OrdenesEstatusShowModal}
                         setOrdenesEstatusShowModal={setOrdenesEstatusShowModal}
                         datosSeleccionados={datosSeleccionados}
+                        onClose={() => {
+                            setOrdenesEstatusShowModal(false)
+                        }}
+                    />
+
+                </Dialog>
+                <Dialog open={OrdenesUpdateEstatusShowModal}>
+                    <OrdenesUpdateEstatusModal
+                        OrdenesUpdateEstatusShowModal={OrdenesUpdateEstatusShowModal}
+                        setOrdenesUpdateEstatusShowModal={setOrdenesUpdateEstatusShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        dataRow={dataRow}
                         onClose={() => {
                             setOrdenesEstatusShowModal(false)
                         }}
