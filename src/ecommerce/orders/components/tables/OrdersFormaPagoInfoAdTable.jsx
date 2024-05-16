@@ -13,6 +13,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
+import OrdenesFormaPagoInfoAdModal from "../modals/patchModals/OrdenesFormaPagoInfoAdModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -22,9 +23,14 @@ const columns = [
         size: 30, //small column
     },
     {
-        accessorKey: "IdSeccionOK",
-        header: "Id Seccion OK",
+        accessorKey: "Valor",
+        header: "Valor",
         size: 30, //small column
+    },
+    {
+        accessorKey: "IdSeccionOK",
+        header: "IdSeccionOK",
+        size: 150, //small column
     },
     {
         accessorKey: "Seccion",
@@ -34,13 +40,13 @@ const columns = [
     {
         accessorKey: "Secuencia",
         header: "Secuencia",
-        size: 150, //small column
-    },
+        size: 150,
+    }
 ];
 
 function getDatosFiltrados(OneProductData, datosSecSubdocumentoPresenta) {
     const resultadoFiltrado = OneProductData.filter(elemento => (
-        elemento.IdTipoPagoOk === datosSecSubdocumentoPresenta.IdTipoPagoOk
+        elemento.IdTipoPagoOK === datosSecSubdocumentoPresenta.IdTipoPagoOK
     ));
 
     // Obtener el primer elemento filtrado (si existe)
@@ -59,7 +65,7 @@ const OrdersFormaPagoInfoAdTable = ({datosSecSubdocProveedores, datosSeleccionad
     const [ordersData, setOrdersData] = useState([]);
 
     // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
-    const [addOrdersShowModal, setAddOrdersShowModal] = useState(false);
+    const [OrdenesFormaPagoInfoAdShowModal, setOrdenesFormaPagoInfoAdShowModal] = useState(false);
 
     // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
     const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
@@ -121,7 +127,9 @@ const OrdersFormaPagoInfoAdTable = ({datosSecSubdocProveedores, datosSeleccionad
                             <Stack direction="row" sx={{m: 1}}>
                                 <Box>
                                     <Tooltip title="Agregar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesFormaPagoInfoAdShowModal(true)}
+                                        >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -149,6 +157,15 @@ const OrdersFormaPagoInfoAdTable = ({datosSecSubdocProveedores, datosSeleccionad
                                 </Box>
                             </Stack>
                             {/* ------- BARRA DE ACCIONES FIN ------ */}
+                            <OrdenesFormaPagoInfoAdModal
+                                OrdenesFormaPagoInfoAdShowModal={OrdenesFormaPagoInfoAdShowModal}
+                                setOrdenesFormaPagoInfoAdShowModal={setOrdenesFormaPagoInfoAdShowModal}
+                                datosSeleccionados={datosSeleccionados}
+                                datosSecSubdocDetalles={datosSecSubdocProveedores}
+                                onClose={() => {
+                                    setOrdenesFormaPagoInfoAdShowModal(false)
+                                }}
+                            />
                         </>
                     )}
                 />

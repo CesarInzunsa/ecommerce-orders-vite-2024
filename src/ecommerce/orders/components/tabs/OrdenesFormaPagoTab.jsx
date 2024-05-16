@@ -15,7 +15,7 @@ export default function OrdenesFormaPagoTab({datosSeleccionados, setDatosSelecci
 
     // indicamos que el estado inicial de los datos del subdocumento
     const [datosSecSubdocProveedores, setDatosSecSubdocProveedores] = useState({
-        IdTipoPagoOk: "0"
+        IdTipoPagoOK: "0"
     });
 
     return (

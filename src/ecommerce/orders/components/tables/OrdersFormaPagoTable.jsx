@@ -13,11 +13,12 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
+import OrdenesFormaPagoModal from "../modals/patchModals/OrdenesFormaPagoModal.jsx";
 
 // Columns Table Definition.
 const columns = [
     {
-        accessorKey: "IdTipoPagoOk",
+        accessorKey: "IdTipoPagoOK",
         header: "Id Tipo Pago",
         size: 30, //small column
     },
@@ -48,7 +49,7 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
     const [ordersData, setOrdersData] = useState([]);
 
     // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
-    const [addOrdersShowModal, setAddOrdersShowModal] = useState(false);
+    const [OrdenesFormaPagoShowModal, setOrdenesFormaPagoShowModal] = useState(false);
 
     // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
     const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
@@ -56,9 +57,10 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
         // Accede a los datos necesarios del registro (rowData) y llama a tu método
-        const {IdTipoPagoOk} = rowData.original;
+        const {IdTipoPagoOK} = rowData.original;
+
         // Actualizar el estado de los datos seleccionados
-        setDatosSecSubdocProveedores({IdTipoPagoOk});
+        setDatosSecSubdocProveedores({IdTipoPagoOK});
     };
 
     async function fetchData() {
@@ -108,7 +110,9 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
                             <Stack direction="row" sx={{m: 1}}>
                                 <Box>
                                     <Tooltip title="Agregar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesFormaPagoShowModal(true)}
+                                        >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -140,6 +144,14 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
                     )}
                 />
                 {/* M O D A L E S */}
+                <OrdenesFormaPagoModal
+                    OrdenesFormaPagoShowModal={OrdenesFormaPagoShowModal}
+                    setOrdenesFormaPagoShowModal={setOrdenesFormaPagoShowModal}
+                    datosSeleccionados={datosSeleccionados}
+                    onClose={() => {
+                        setOrdenesFormaPagoShowModal(false)
+                    }}
+                />
             </Box>
         </Box>
     );

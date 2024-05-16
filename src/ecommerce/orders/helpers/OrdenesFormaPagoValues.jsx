@@ -6,7 +6,7 @@ export const OrdenesFormaPagoValues = (values, ordenesFormaPago) => {
     let OrdenesFormaPago = ordenesFormaPago || OrdenesFormaPagoModel();
     // Crear un nuevo objeto de estatus
     let nuevoDetalle = {
-        IdTipoPago: values.IdTipoPago,
+        IdTipoPagoOK: values.IdTipoPagoOK,
         MontoPagado: values.MontoPagado,
         MontoRecibido: values.MontoRecibido,
         MontoDevuelto: values.MontoDevuelto,
