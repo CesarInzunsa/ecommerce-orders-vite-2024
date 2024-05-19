@@ -139,7 +139,7 @@ const OrdenesUpdateEstatusModal = ({
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
                 <DialogContent sx={{display: 'flex', flexDirection: 'column'}} dividers>
                     {/* FIC: Campos de captura o selección */}
-                    <InputLabel htmlFor="dynamic-select-tipo-orden">Tipo de Orden</InputLabel>
+                    <InputLabel htmlFor="dynamic-select-tipo-orden">{`Tipo de Orden${dataRow.IdTipoEstatusOK}`}</InputLabel>
                     <Select
                         id="dynamic-select-tipo-orden"
                         value={formik.values.IdTipoEstatusOK}

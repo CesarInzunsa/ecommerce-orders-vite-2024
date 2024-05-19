@@ -15,6 +15,10 @@ import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 // Modals
 import OrdenesEstatusModal from "../modals/patchModals/OrdenesEstatusModal.jsx";
 import OrdenesUpdateEstatusModal from "../modals/updateModals/OrdenesUpdateEstatusModal.jsx";
+import {showMensajeConfirm, showMensajeError} from "../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import {DelOneOrder} from "../../services/remote/del/DelOneOrder.jsx";
+import {UpdatePatchOneOrder} from "../../services/remote/put/UpdatePatchOneOrder.jsx";
+import {OrdenesEstatusValues} from "../../helpers/OrdenesEstatusValues.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -85,6 +89,51 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
         fetchData();
     }, []);
 
+    // Funcion par eliminar estatus órdenes
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `El estatus con el ID: ${
+                (dataRow.IdTipoEstatusOK)
+            } será eliminada, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener el indice de la fila seleccionada
+                const selectedRowIndex = ordersData.findIndex((row) => row.IdTipoEstatusOK === dataRow.IdTipoEstatusOK);
+
+                // Verificar si no se seleccionó ninguna fila
+                if (selectedRowIndex === -1) {
+                    return;
+                }
+
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                // Actualizar la información
+                const estatusArray = [...ordenExistente.estatus];
+                estatusArray.splice(selectedRowIndex, 1);
+                const dataToUpdate = {
+                    estatus: estatusArray,
+                };
+
+                // Actualizar el documento con el endpoint
+                await UpdatePatchOneOrder?.(IdInstitutoOK, IdNegocioOK, IdOrdenOK, dataToUpdate);
+
+                // Mostrar mensaje de confirmación
+                await showMensajeConfirm("Estatus eliminado con exito");
+
+                // Actualizar la data
+                await fetchData();
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar el estatus`);
+            }
+        }
+    };
+
     return (
         <Box>
             <Box>
@@ -120,7 +169,9 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => handleDelete()}
+                                        >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>

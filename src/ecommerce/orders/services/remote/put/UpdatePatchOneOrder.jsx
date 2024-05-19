@@ -1,9 +1,9 @@
 import axios from "axios";
 
-export function UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, id, updateData) {
+export function UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, updateData) {
     return new Promise((resolve, reject) => {
         // Puedes ajustar la URL según tu API
-        axios.patch(`${import.meta.env.VITE_API_ORDERS_URL}/one?IdInstitutoOK=${IdInstitutoOK}&IdNegocioOK=${IdNegocioOK}&IdOrdenOK=${id}`, updateData)
+        axios.patch(`${import.meta.env.VITE_API_ORDERS_URL}/one?IdInstitutoOK=${IdInstitutoOK}&IdNegocioOK=${IdNegocioOK}&IdOrdenOK=${IdOrdenOK}`, updateData)
             .then((response) => {
                 const data = response.data;
 
@@ -11,7 +11,7 @@ export function UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, id, updateData) 
                     console.error("No se pudo realizar correctamente la petición <<updateOrdenById - Services>>", data);
                     reject(data);
                 } else {
-                    console.log(`Orden con ID ${id} actualizada exitosamente`);
+                    console.log(`Orden con ID ${IdOrdenOK} actualizada exitosamente`);
                     resolve(data); // Puedes resolver con algún mensaje o datos adicionales si es necesario
                 }
             })
