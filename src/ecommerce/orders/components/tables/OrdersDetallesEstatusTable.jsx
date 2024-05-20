@@ -109,37 +109,42 @@ const OrdersDetallesEstatusTable = ({datosSecSubdocDetalles, datosSeleccionados}
         );
         if (res) {
             try {
-                // Obtener el indice de la fila seleccionada
-                const selectedRowIndex = ordersData.findIndex((row) => row.IdTipoEstatusOK === dataRow.IdTipoEstatusOK);
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
 
-                // Verificar si no se seleccionó ninguna fila
-                if (selectedRowIndex !== -1) {
-                    // Obtener los id's seleccionados del documento principal
-                    let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
 
-                    // Obtener toda la información del documento que se quiere actualizar su subdocumento
-                    const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+                // Encuentra el índice del subdocumento detalle_ps que quieres actualizar
+                const detallePsIndex = ordenExistente.detalle_ps.findIndex(detalle => {
+                    // Encuentra el índice del subdocumento info_ad que debemos actualizar
+                    const infoAdIndex = detalle.estatus.findIndex(infoAd => infoAd.IdTipoEstatusOK === dataRow.IdTipoEstatusOK);
 
-                    // Actualizar la información
-                    const estatusArray = [...ordenExistente.detalle_ps[selectedRowIndex].estatus];
-                    estatusArray.splice(selectedRowIndex, 1);
-                    ordenExistente.detalle_ps[selectedRowIndex].estatus = estatusArray;
+                    // Si se encontró el subdocumento info_ad, devuelve true para detener la búsqueda
+                    return infoAdIndex !== -1;
+                });
 
-                    // Prepara los datos para actualizar el documento
-                    const dataToUpdate = {
-                        detalle_ps: ordenExistente.detalle_ps,
-                    };
 
-                    // Actualizar el documento con el endpoint
-                    await UpdatePatchOneOrder?.(IdInstitutoOK, IdNegocioOK, IdOrdenOK, dataToUpdate);
+                // Verifica si se encontró el subdocumento detalle_ps
+                if (detallePsIndex !== -1) {
+                    // Encuentra el índice del subdocumento estatus dentro del subdocumento detalle_ps encontrado
+                    const estatusIndex = ordenExistente.detalle_ps[detallePsIndex].estatus.findIndex(infoAd => infoAd.IdTipoEstatusOK === dataRow.IdTipoEstatusOK);
+
+                    // Ahora ya tenemos los índices de detalle_ps e estatus
+                    console.log("detallePsIndex: ", detallePsIndex);
+                    console.log("estatusIndex: ", estatusIndex);
+
+                    // Elimina el subdocumento estatus
+                    ordenExistente.detalle_ps[detallePsIndex].estatus.splice(estatusIndex, 1);
+
+                    // Actualiza el documento con el endpoint
+                    await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
 
                     // Mostrar mensaje de confirmación
                     await showMensajeConfirm("Estatus eliminado con exito");
 
                     // Actualizar la data
                     await fetchData();
-                } else {
-                    showMensajeError(`No se pudo eliminar el estatus`);
                 }
             } catch (e) {
                 console.error("handleDelete", e);
@@ -207,21 +212,25 @@ const OrdersDetallesEstatusTable = ({datosSecSubdocDetalles, datosSeleccionados}
                     )}
                 />
                 {/* M O D A L E S */}
-                <OrdenesDetallesEstatusModal
-                    OrdenesDetallesEstatusShowModal={OrdenesDetallesEstatusShowModal}
-                    setOrdenesDetallesEstatusShowModal={setOrdenesDetallesEstatusShowModal}
-                    datosSeleccionados={datosSeleccionados}
-                    datosSecSubdocDetalles={datosSecSubdocDetalles}
-                    onClose={() => setOrdenesDetallesEstatusShowModal(false)}
-                />
-                <OrdenesUpdateDetallesEstatusModal
-                    OrdenesUpdateDetallesEstatusShowModal={OrdenesUpdateDetallesEstatusShowModal}
-                    setOrdenesUpdateDetallesEstatusShowModal={setOrdenesUpdateDetallesEstatusShowModal}
-                    datosSeleccionados={datosSeleccionados}
-                    datosSecSubdocDetalles={datosSecSubdocDetalles}
-                    dataRow={dataRow}
-                    onClose={() => setOrdenesUpdateDetallesEstatusShowModal(false)}
-                />
+                <Dialog open={OrdenesDetallesEstatusShowModal}>
+                    <OrdenesDetallesEstatusModal
+                        OrdenesDetallesEstatusShowModal={OrdenesDetallesEstatusShowModal}
+                        setOrdenesDetallesEstatusShowModal={setOrdenesDetallesEstatusShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdocDetalles={datosSecSubdocDetalles}
+                        onClose={() => setOrdenesDetallesEstatusShowModal(false)}
+                    />
+                </Dialog>
+                <Dialog open={OrdenesUpdateDetallesEstatusShowModal}>
+                    <OrdenesUpdateDetallesEstatusModal
+                        OrdenesUpdateDetallesEstatusShowModal={OrdenesUpdateDetallesEstatusShowModal}
+                        setOrdenesUpdateDetallesEstatusShowModal={setOrdenesUpdateDetallesEstatusShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdocDetalles={datosSecSubdocDetalles}
+                        dataRow={dataRow}
+                        onClose={() => setOrdenesUpdateDetallesEstatusShowModal(false)}
+                    />
+                </Dialog>
             </Box>
         </Box>
     );

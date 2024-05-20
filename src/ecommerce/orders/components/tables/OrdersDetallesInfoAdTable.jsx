@@ -14,6 +14,9 @@ import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
 import OrdenesDetallesInfoAdModal from "../modals/patchModals/OrdenesDetallesInfoAdModal.jsx";
+import OrdenesUpdateDetallesInfoAdModal from "../modals/updateModals/OrdenesUpdateDetallesInfoAdModal.jsx";
+import {UpdatePatchOneOrder} from "../../services/remote/put/UpdatePatchOneOrder.jsx";
+import {showMensajeConfirm, showMensajeError} from "../../../../share/components/elements/messages/MySwalAlerts.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -73,13 +76,17 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
     // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
     const [OrdenesDetallesInfoAdShowModal, setOrdenesDetallesInfoAdShowModal] = useState(false);
 
-    // // Función para manejar el clic en una fila
-    // const sendDataRow = (rowData) => {
-    //     // Accede a los datos necesarios del registro (rowData) y llama a tu método
-    //     const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = rowData.original;
-    //     // Actualizar el estado de los datos seleccionados
-    //     setDatosSeleccionados({IdInstitutoOK, IdNegocioOK, IdOrdenOK});
-    // };
+    // controlar el estado del modal para actualizar
+    const [OrdenesDetallesInfoAdShowModalUpdate, setOrdenesDetallesInfoAdShowModalUpdate] = useState(false);
+
+    // Controlar la informacion seleccionada
+    const [dataRow, setDataRow] = useState();
+
+    // Función para manejar el clic en una fila
+    const sendDataRow = (rowData) => {
+        // Guardar la informacion seleccionada
+        setDataRow(rowData.original);
+    };
 
     async function fetchData() {
         try {
@@ -109,6 +116,58 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
         fetchData();
     }, []);
 
+    // Funcion par eliminar estatus órdenes
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `La Informacion Adicional con el ID: ${
+                (dataRow.IdEtiquetaOK)
+            } será eliminada, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                // Encuentra el índice del subdocumento detalle_ps que quieres actualizar
+                const detallePsIndex = ordenExistente.detalle_ps.findIndex(detalle => {
+                    // Encuentra el índice del subdocumento info_ad que debemos actualizar
+                    const infoAdIndex = detalle.info_ad.findIndex(infoAd => infoAd.IdEtiquetaOK === dataRow.IdEtiquetaOK && infoAd.IdTipoSeccionOK === dataRow.IdTipoSeccionOK);
+
+                    // Si se encontró el subdocumento info_ad, devuelve true para detener la búsqueda
+                    return infoAdIndex !== -1;
+                });
+
+                // Verifica si se encontró el subdocumento detalle_ps
+                if (detallePsIndex !== -1) {
+                    // Encuentra el índice del subdocumento info_ad dentro del subdocumento detalle_ps encontrado
+                    const infoAdIndex = ordenExistente.detalle_ps[detallePsIndex].info_ad.findIndex(infoAd => infoAd.IdEtiquetaOK === dataRow.IdEtiquetaOK && infoAd.IdTipoSeccionOK === dataRow.IdTipoSeccionOK);
+
+                    // Ahora ya tenemos los índices de detalle_ps e info_ad
+                    console.log("detallePsIndex: ", detallePsIndex);
+                    console.log("infoAdIndex: ", infoAdIndex);
+
+                    // Elimina el subdocumento info_ad
+                    ordenExistente.detalle_ps[detallePsIndex].info_ad.splice(infoAdIndex, 1);
+
+                    // Actualiza el documento con el endpoint
+                    await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
+
+                    // Mostrar mensaje de confirmación
+                    await showMensajeConfirm("InfoAd eliminada con exito");
+
+                    // Actualizar la data
+                    await fetchData();
+                }
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar la InfoAd`);
+            }
+        }
+    };
+
     return (
         <Box>
             <Box>
@@ -117,13 +176,13 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
                     initialState={{density: "compact", showGlobalFilter: true}}
                     data={ordersData}
                     state={{isLoading: loadingTable}}
-                    // enableMultiRowSelection={false}
-                    // enableRowSelection={true}
-                    // muiTableBodyRowProps={({row}) => ({
-                    //     onClick: row.getToggleSelectedHandler(),
-                    //     onClickCapture: () => sendDataRow(row),
-                    //     sx: {cursor: 'pointer'},
-                    // })}
+                    enableMultiRowSelection={false}
+                    enableRowSelection={true}
+                    muiTableBodyRowProps={({row}) => ({
+                        onClick: row.getToggleSelectedHandler(),
+                        onClickCapture: () => sendDataRow(row),
+                        sx: {cursor: 'pointer'},
+                    })}
                     renderTopToolbarCustomActions={() => (
                         <>
                             {/* ------- BARRA DE ACCIONES ------ */}
@@ -137,12 +196,16 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesDetallesInfoAdShowModalUpdate(true)}
+                                        >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => handleDelete()}
+                                        >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -164,13 +227,26 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
                     )}
                 />
                 {/* M O D A L E S */}
-                <OrdenesDetallesInfoAdModal
-                    OrdenesDetallesInfoAdShowModal={OrdenesDetallesInfoAdShowModal}
-                    setOrdenesDetallesInfoAdShowModal={setOrdenesDetallesInfoAdShowModal}
-                    datosSeleccionados={datosSeleccionados}
-                    datosSecSubdocDetalles={datosSecSubdocDetalles}
-                    onClose={() => setOrdenesDetallesInfoAdShowModal(false)}
-                />
+                <Dialog open={OrdenesDetallesInfoAdShowModal}>
+                    <OrdenesDetallesInfoAdModal
+                        OrdenesDetallesInfoAdShowModal={OrdenesDetallesInfoAdShowModal}
+                        setOrdenesDetallesInfoAdShowModal={setOrdenesDetallesInfoAdShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdocDetalles={datosSecSubdocDetalles}
+                        onClose={() => setOrdenesDetallesInfoAdShowModal(false)}
+                    />
+                </Dialog>
+                <Dialog open={OrdenesDetallesInfoAdShowModalUpdate}>
+                    <OrdenesUpdateDetallesInfoAdModal
+                        OrdenesDetallesInfoAdShowModalUpdate={OrdenesDetallesInfoAdShowModalUpdate}
+                        setOrdenesDetallesInfoAdShowModalUpdate={setOrdenesDetallesInfoAdShowModalUpdate}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdocDetalles={datosSecSubdocDetalles}
+                        dataRow={dataRow}
+                        onClose={() => setOrdenesDetallesInfoAdShowModalUpdate(false)}
+                    />
+                </Dialog>
+
             </Box>
         </Box>
     );
