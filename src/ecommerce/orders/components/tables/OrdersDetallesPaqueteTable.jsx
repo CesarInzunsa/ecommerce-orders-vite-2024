@@ -13,7 +13,10 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
+import OrdenesDetallesPaqueteUpdateModal from "../modals/updateModals/OrdenesDetallesPaqueteUpdateModal.jsx";
 import OrdenesDetallesPaqueteModal from "../modals/patchModals/OrdenesDetallesPaqueteModal.jsx";
+import {showMensajeConfirm, showMensajeError} from "../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import {UpdatePatchOneOrder} from "../../services/remote/put/UpdatePatchOneOrder.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -62,13 +65,17 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
     // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
     const [OrdenesDetallesPaqueteShowModal, setOrdenesDetallesPaqueteShowModal] = useState(false);
 
-    // // Función para manejar el clic en una fila
-    // const sendDataRow = (rowData) => {
-    //     // Accede a los datos necesarios del registro (rowData) y llama a tu método
-    //     const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = rowData.original;
-    //     // Actualizar el estado de los datos seleccionados
-    //     setDatosSeleccionados({IdInstitutoOK, IdNegocioOK, IdOrdenOK});
-    // };
+    // Controlar la informacion seleccionada
+    const [dataRow, setDataRow] = useState();
+
+    // controlar el estado que muestra u oculta el modal para actualizar el subdocumento.
+    const [OrdenesDetallesPaqueteUpdateShowModal, setOrdenesDetallesPaqueteUpdateShowModal] = useState(false);
+
+    // Función para manejar el clic en una fila
+    const sendDataRow = (rowData) => {
+        // Guardar la informacion seleccionada
+        setDataRow(rowData.original);
+    };
 
     async function fetchData() {
         try {
@@ -98,6 +105,58 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
         fetchData();
     }, []);
 
+    // Función par eliminar detalle-paquete de órdenes
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `El paquete con el ID: ${
+                (dataRow.idPresentaOK)
+            } será eliminada, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                // Encuentra el índice del subdocumento detalle_ps que quieres actualizar
+                const detallePsIndex = ordenExistente.detalle_ps.findIndex(detalle => {
+                    // Encuentra el índice del subdocumento paquete que debemos actualizar
+                    const paqueteIndex = detalle.paquete.findIndex(subDoc => subDoc.idPresentaOK === dataRow.idPresentaOK);
+
+                    // Si se encontró el subdocumento paquete, devuelve true para detener la búsqueda
+                    return paqueteIndex !== -1;
+                });
+
+                // Verifica si se encontró el subdocumento detalle_ps
+                if (detallePsIndex !== -1) {
+                    // Encuentra el índice del subdocumento paquete dentro del subdocumento detalle_ps encontrado
+                    const paqueteIndex = ordenExistente.detalle_ps[detallePsIndex].paquete.findIndex(infoAd => infoAd.idPresentaOK === dataRow.idPresentaOK);
+
+                    // Ahora ya tenemos los índices de detalle_ps e paquete
+                    console.log("detallePsIndex: ", detallePsIndex);
+                    console.log("paqueteIndex: ", paqueteIndex);
+
+                    // Elimina el subdocumento paquete
+                    ordenExistente.detalle_ps[detallePsIndex].paquete.splice(paqueteIndex, 1);
+
+                    // Actualiza el documento con el endpoint
+                    await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
+
+                    // Mostrar mensaje de confirmación
+                    await showMensajeConfirm("Paquete eliminado con exito");
+
+                    // Actualizar la data
+                    await fetchData();
+                }
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar la InfoAd`);
+            }
+        }
+    };
+
     return (
         <Box>
             <Box>
@@ -106,13 +165,13 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
                     initialState={{density: "compact", showGlobalFilter: true}}
                     data={ordersData}
                     state={{isLoading: loadingTable}}
-                    // enableMultiRowSelection={false}
-                    // enableRowSelection={true}
-                    // muiTableBodyRowProps={({row}) => ({
-                    //     onClick: row.getToggleSelectedHandler(),
-                    //     onClickCapture: () => sendDataRow(row),
-                    //     sx: {cursor: 'pointer'},
-                    // })}
+                    enableMultiRowSelection={false}
+                    enableRowSelection={true}
+                    muiTableBodyRowProps={({row}) => ({
+                        onClick: row.getToggleSelectedHandler(),
+                        onClickCapture: () => sendDataRow(row),
+                        sx: {cursor: 'pointer'},
+                    })}
                     renderTopToolbarCustomActions={() => (
                         <>
                             {/* ------- BARRA DE ACCIONES ------ */}
@@ -126,12 +185,16 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesDetallesPaqueteUpdateShowModal(true)}
+                                        >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={handleDelete}
+                                        >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -153,13 +216,25 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
                     )}
                 />
                 {/* M O D A L E S */}
-                <OrdenesDetallesPaqueteModal
-                    OrdenesDetallesPaqueteShowModal={OrdenesDetallesPaqueteShowModal}
-                    setOrdenesDetallesPaqueteShowModal={setOrdenesDetallesPaqueteShowModal}
-                    datosSeleccionados={datosSeleccionados}
-                    datosSecSubdocDetalles={datosSecSubdocDetalles}
-                    onClose={() => setOrdenesDetallesPaqueteShowModal(false)}
-                />
+                <Dialog open={OrdenesDetallesPaqueteShowModal}>
+                    <OrdenesDetallesPaqueteModal
+                        OrdenesDetallesPaqueteShowModal={OrdenesDetallesPaqueteShowModal}
+                        setOrdenesDetallesPaqueteShowModal={setOrdenesDetallesPaqueteShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdocDetalles={datosSecSubdocDetalles}
+                        onClose={() => setOrdenesDetallesPaqueteShowModal(false)}
+                    />
+                </Dialog>
+                <Dialog open={OrdenesDetallesPaqueteUpdateShowModal}>
+                    <OrdenesDetallesPaqueteUpdateModal
+                        OrdenesDetallesPaqueteUpdateShowModal={OrdenesDetallesPaqueteUpdateShowModal}
+                        setOrdenesDetallesPaqueteUpdateShowModal={setOrdenesDetallesPaqueteUpdateShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdocDetalles={datosSecSubdocDetalles}
+                        dataRow={dataRow}
+                        onClose={() => setOrdenesDetallesPaqueteUpdateShowModal(false)}
+                    />
+                </Dialog>
             </Box>
         </Box>
     );
