@@ -113,7 +113,7 @@ const OrdenesFormaPagoModal = ({OrdenesFormaPagoShowModal, setOrdenesFormaPagoSh
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo Estado de la Orden</strong>
+                        <strong>Agregar Nuevo Forma Pago a la Orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}

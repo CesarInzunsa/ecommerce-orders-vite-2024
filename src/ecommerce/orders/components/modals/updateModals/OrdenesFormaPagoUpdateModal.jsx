@@ -1,4 +1,3 @@
-// Importar de material-ui
 import {
     Dialog,
     DialogContent,
@@ -12,13 +11,11 @@ import {
     Select,
     MenuItem,
     Checkbox,
-    FormControlLabel, FormHelperText, FormControl, Switch, Stack
+    FormControlLabel
 } from "@mui/material";
 import {LoadingButton} from "@mui/lab";
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
-
-// Importar React
 import React, {useState, useEffect} from "react";
 
 // Formik - Yup
@@ -26,43 +23,34 @@ import {useFormik} from "formik";
 import * as Yup from "yup";
 
 //HELPERS
+import {OrdenesFormaPagoValues} from "../../../helpers/OrdenesFormaPagoValues.jsx";
 import {UpdatePatchOneOrder} from "../../../services/remote/put/UpdatePatchOneOrder";
-import {OrdenesFormaPagoInfoAdValues} from "../../../helpers/OrdenesFormaPagoInfoAdValues.jsx";
 import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
 
-const OrdenesFormaPagoInfoAdModal = ({
-                                         OrdenesFormaPagoInfoAdShowModal,
-                                         setOrdenesFormaPagoInfoAdShowModal,
+const OrdenesFormaPagoUpdateModal = ({
+                                         OrdenesFormaPagoUpdateShowModal,
+                                         setOrdenesFormaPagoUpdateShowModal,
                                          datosSeleccionados,
-                                         datosSecSubdocDetalles
+                                         dataRow
                                      }) => {
-
-    // Declarar estados para las alertas de éxito y error
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
-
-    // Hook para manejar el estado de carga
     const [Loading, setLoading] = useState(false);
-
-    // Hook para refrescar el componente
-    const [refresh, setRefresh] = useState(false);
 
     //Para ver la data que trae el documento completo desde el dispatch de ShippingsTable
     //FIC: Definition Formik y Yup.
     const formik = useFormik({
         initialValues: {
-            Etiqueta: "",
-            Valor: "",
-            IdSeccionOK: "",
-            Seccion: "",
-            Secuencia: "",
+            IdTipoPagoOK: dataRow?.IdTipoPagoOK || "",
+            MontoPagado: dataRow?.MontoPagado || "",
+            MontoRecibido: dataRow?.MontoRecibido || "",
+            MontoDevuelto: dataRow?.MontoDevuelto || "",
         },
         validationSchema: Yup.object({
-            Etiqueta: Yup.string().required("El idPresentaOK es requerido"),
-            Valor: Yup.string().required("El DesPresenta es requerido"),
-            IdSeccionOK: Yup.string().required("La Cantidad es requerida"),
-            Seccion: Yup.string().required("El Precio es requerido"),
-            Secuencia: Yup.number().required("El Precio es requerido"),
+            IdTipoPagoOK: Yup.string().required("Campo Requerido"),
+            MontoPagado: Yup.number().required("Campo Requerido"),
+            MontoRecibido: Yup.number().required("Campo Requerido"),
+            MontoDevuelto: Yup.number().required("Campo Requerido"),
         }),
         onSubmit: async (values) => {
             //FIC: mostramos el Loading.
@@ -74,40 +62,26 @@ const OrdenesFormaPagoInfoAdModal = ({
             setMensajeErrorAlert(null);
             setMensajeExitoAlert(null);
             try {
-                // Desestructurar datos del documento seleccionado
+
                 const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
 
-                // Obtener la orden existente
                 const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
 
-                // Determinar el indice del subdocumento seleccionado
-                const index = ordenExistente.forma_pago.findIndex((elemento) => (
-                    elemento.IdTipoPagoOK === datosSecSubdocDetalles.IdTipoPagoOK
-                ));
+                for (let index = 0; index < ordenExistente.forma_pago.length; index++) {
 
-                for (let i = 0; i < ordenExistente.forma_pago[index].info_ad.length; i++) {
-                    //console.log("Entro")
-                    ordenExistente.forma_pago[index].info_ad[i] = {
-                        Etiqueta: ordenExistente.forma_pago[index].info_ad[i].Etiqueta,
-                        Valor: ordenExistente.forma_pago[index].info_ad[i].Valor,
-                        IdSeccionOK: ordenExistente.forma_pago[index].info_ad[i].IdSeccionOK,
-                        Seccion: ordenExistente.forma_pago[index].info_ad[i].Seccion,
-                        Secuencia: ordenExistente.forma_pago[index].info_ad[i].Secuencia,
-                    };
-                    //console.log("Realizo", ordenExistente)
+                    if (ordenExistente.forma_pago[index].IdTipoPagoOK === dataRow.IdTipoPagoOK) {
+                        ordenExistente.forma_pago[index].MontoPagado = values.MontoPagado;
+                        ordenExistente.forma_pago[index].MontoRecibido = values.MontoRecibido;
+                        ordenExistente.forma_pago[index].MontoDevuelto = values.MontoDevuelto;
+                    }
                 }
 
-                // Obtener los valores de la ventana modal
-                const FormaPagoInfoAdData = OrdenesFormaPagoInfoAdValues(values, ordenExistente, index);
-
-                // actualizar la orden
-                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, FormaPagoInfoAdData);
-
-                // Declarar estado de exito.
-                setMensajeExitoAlert("Informacion actualizada exitosamente");
+                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
+                setMensajeExitoAlert("Envío actualizado Correctamente");
+                //handleReload(); //usar la función para volver a cargar los datos de la tabla y que se vea la actualizada
             } catch (e) {
                 setMensajeExitoAlert(null);
-                setMensajeErrorAlert("Ocurrio un error al actualizar la informacion. Intente de nuevo.");
+                setMensajeErrorAlert("No se pudo Registrar");
             }
             //FIC: ocultamos el Loading.
             setLoading(false);
@@ -125,60 +99,55 @@ const OrdenesFormaPagoInfoAdModal = ({
 
     return (
         <Dialog
-            open={OrdenesFormaPagoInfoAdShowModal}
-            onClose={() => setOrdenesFormaPagoInfoAdShowModal(false)}
+            open={OrdenesFormaPagoUpdateShowModal}
+            onClose={() => setOrdenesFormaPagoUpdateShowModal(false)}
             fullWidth
         >
-            <form onSubmit={formik.handleSubmit}>
+            <form onSubmit={(e) => {
+                formik.handleSubmit(e);
+            }}>
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo Forma Pago Info Ad a la Orden</strong>
+                        <strong>Actualizar Forma Pago de la Orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
-                <DialogContent sx={{display: "flex", flexDirection: "column"}} dividers>
+                <DialogContent sx={{display: 'flex', flexDirection: 'column'}} dividers>
                     {/* FIC: Campos de captura o selección */}
                     <TextField
-                        id="IdSeccionOK"
-                        label="IdSeccionOK*"
-                        value={formik.values.IdSeccionOK}
+                        id="IdTipoPagoOK"
+                        label="IdTipoPagoOK*"
+                        value={formik.values.IdTipoPagoOK}
                         {...commonTextFieldProps}
-                        error={formik.touched.IdSeccionOK && Boolean(formik.errors.IdSeccionOK)}
-                        helperText={formik.touched.IdSeccionOK && formik.errors.IdSeccionOK}
+                        error={formik.touched.IdTipoPagoOK && Boolean(formik.errors.IdTipoPagoOK)}
+                        helperText={formik.touched.IdTipoPagoOK && formik.errors.IdTipoPagoOK}
                     />
                     <TextField
-                        id="Etiqueta"
-                        label="Etiqueta*"
-                        value={formik.values.Etiqueta}
+                        id="MontoPagado"
+                        label="MontoPagado*"
+                        value={formik.values.MontoPagado}
                         {...commonTextFieldProps}
-                        error={formik.touched.Etiqueta && Boolean(formik.errors.Etiqueta)}
-                        helperText={formik.touched.Etiqueta && formik.errors.Etiqueta}
+                        error={formik.touched.MontoPagado && Boolean(formik.errors.MontoPagado)}
+                        helperText={formik.touched.MontoPagado && formik.errors.MontoPagado}
                     />
                     <TextField
-                        id="Valor"
-                        label="Valor*"
-                        value={formik.values.Valor}
+                        id="MontoRecibido"
+                        label="MontoRecibido*"
+                        value={formik.values.MontoRecibido}
                         {...commonTextFieldProps}
-                        error={formik.touched.Valor && Boolean(formik.errors.Valor)}
-                        helperText={formik.touched.Valor && formik.errors.Valor}
+                        error={formik.touched.MontoRecibido && Boolean(formik.errors.MontoRecibido)}
+                        helperText={formik.touched.MontoRecibido && formik.errors.MontoRecibido}
                     />
                     <TextField
-                        id="Seccion"
-                        label="Seccion*"
-                        value={formik.values.Seccion}
+                        id="MontoDevuelto"
+                        label="MontoDevuelto*"
+                        value={formik.values.MontoDevuelto}
                         {...commonTextFieldProps}
-                        error={formik.touched.Seccion && Boolean(formik.errors.Seccion)}
-                        helperText={formik.touched.Seccion && formik.errors.Seccion}
+                        error={formik.touched.MontoDevuelto && Boolean(formik.errors.MontoDevuelto)}
+                        helperText={formik.touched.MontoDevuelto && formik.errors.MontoDevuelto}
                     />
-                    <TextField
-                        id="Secuencia"
-                        label="Secuencia*"
-                        value={formik.values.Secuencia}
-                        {...commonTextFieldProps}
-                        error={formik.touched.Secuencia && Boolean(formik.errors.Secuencia)}
-                        helperText={formik.touched.Secuencia && formik.errors.Secuencia}
-                    />
+
                 </DialogContent>
                 {/* FIC: Aqui van las acciones del usuario como son las alertas o botones */}
                 <DialogActions sx={{display: 'flex', flexDirection: 'row'}}>
@@ -201,7 +170,7 @@ const OrdenesFormaPagoInfoAdModal = ({
                         startIcon={<CloseIcon/>}
                         variant="outlined"
                         onClick={() => {
-                            setOrdenesFormaPagoInfoAdShowModal(false);
+                            setOrdenesFormaPagoUpdateShowModal(false);
                             // reestablecer los valores de mensajes de exito y error
                             setMensajeErrorAlert(null);
                             setMensajeExitoAlert(null);
@@ -219,8 +188,7 @@ const OrdenesFormaPagoInfoAdModal = ({
                         startIcon={<SaveIcon/>}
                         variant="contained"
                         type="submit"
-                        disabled={!!mensajeExitoAlert}
-                        loading={Loading}
+                        disabled={formik.isSubmitting || !!mensajeExitoAlert || Loading}
                     >
                         <span>GUARDAR</span>
                     </LoadingButton>
@@ -229,4 +197,4 @@ const OrdenesFormaPagoInfoAdModal = ({
         </Dialog>
     );
 };
-export default OrdenesFormaPagoInfoAdModal;
+export default OrdenesFormaPagoUpdateModal;

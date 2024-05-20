@@ -14,6 +14,9 @@ import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
 import OrdenesFormaPagoModal from "../modals/patchModals/OrdenesFormaPagoModal.jsx";
+import OrdenesFormaPagoUpdateModal from "../modals/updateModals/OrdenesFormaPagoUpdateModal.jsx";
+import {UpdatePatchOneOrder} from "../../services/remote/put/UpdatePatchOneOrder.jsx";
+import {showMensajeConfirm, showMensajeError} from "../../../../share/components/elements/messages/MySwalAlerts.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -52,10 +55,16 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
     const [OrdenesFormaPagoShowModal, setOrdenesFormaPagoShowModal] = useState(false);
 
     // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
-    const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
+    const [OrdenesFormaPagoUpdateShowModal, setOrdenesFormaPagoUpdateShowModal] = useState(false);
+
+    // Controlar la informacion seleccionada
+    const [dataRow, setDataRow] = useState();
 
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
+        // Guardar la informacion seleccionada
+        setDataRow(rowData.original);
+
         // Accede a los datos necesarios del registro (rowData) y llama a tu método
         const {IdTipoPagoOK} = rowData.original;
 
@@ -89,6 +98,49 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
         fetchData();
     }, []);
 
+    // Funcion par eliminar subdocumento
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `La Forma de Pago con el ID: ${
+                (dataRow.IdTipoPagoOK)
+            } será eliminada, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener el indice de la fila seleccionada
+                const selectedRowIndex = ordersData.findIndex((row) => row.IdTipoPagoOK === dataRow.IdTipoPagoOK);
+
+                // Verificar si no se seleccionó ninguna fila
+                if (selectedRowIndex !== -1) {
+                    // Obtener los id's seleccionados del documento principal
+                    let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                    // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                    const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                    // Actualizar la información
+                    const formaPagoArray = [...ordenExistente.forma_pago];
+                    formaPagoArray.splice(selectedRowIndex, 1);
+                    const dataToUpdate = {
+                        forma_pago: formaPagoArray,
+                    };
+
+                    // Actualizar el documento con el endpoint
+                    await UpdatePatchOneOrder?.(IdInstitutoOK, IdNegocioOK, IdOrdenOK, dataToUpdate);
+
+                    // Mostrar mensaje de confirmación
+                    await showMensajeConfirm("Estatus eliminado con exito");
+
+                    // Actualizar la data
+                    await fetchData();
+                }
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar el estatus`);
+            }
+        }
+    };
+
     return (
         <Box>
             <Box>
@@ -117,12 +169,16 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesFormaPagoUpdateShowModal(true)}
+                                        >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => handleDelete()}
+                                        >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -144,14 +200,27 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
                     )}
                 />
                 {/* M O D A L E S */}
-                <OrdenesFormaPagoModal
-                    OrdenesFormaPagoShowModal={OrdenesFormaPagoShowModal}
-                    setOrdenesFormaPagoShowModal={setOrdenesFormaPagoShowModal}
-                    datosSeleccionados={datosSeleccionados}
-                    onClose={() => {
-                        setOrdenesFormaPagoShowModal(false)
-                    }}
-                />
+                <Dialog open={OrdenesFormaPagoShowModal}>
+                    <OrdenesFormaPagoModal
+                        OrdenesFormaPagoShowModal={OrdenesFormaPagoShowModal}
+                        setOrdenesFormaPagoShowModal={setOrdenesFormaPagoShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        onClose={() => {
+                            setOrdenesFormaPagoShowModal(false)
+                        }}
+                    />
+                </Dialog>
+                <Dialog open={OrdenesFormaPagoUpdateShowModal}>
+                    <OrdenesFormaPagoUpdateModal
+                        OrdenesFormaPagoUpdateShowModal={OrdenesFormaPagoUpdateShowModal}
+                        setOrdenesFormaPagoUpdateShowModal={setOrdenesFormaPagoUpdateShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        dataRow={dataRow}
+                        onClose={() => {
+                            setOrdenesFormaPagoUpdateShowModal(false)
+                        }}
+                    />
+                </Dialog>
             </Box>
         </Box>
     );

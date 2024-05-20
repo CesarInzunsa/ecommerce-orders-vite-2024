@@ -14,9 +14,17 @@ import {GetOneOrder} from '../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
 import OrdenesFormaPagoInfoAdModal from "../modals/patchModals/OrdenesFormaPagoInfoAdModal.jsx";
+import OrdenesFormaPagoInfoAdUpdateModal from "../modals/updateModals/OrdenesFormaPagoInfoAdUpdateModal.jsx";
+import {UpdatePatchOneOrder} from "../../services/remote/put/UpdatePatchOneOrder.jsx";
+import {showMensajeConfirm, showMensajeError} from "../../../../share/components/elements/messages/MySwalAlerts.jsx";
 
 // Columns Table Definition.
 const columns = [
+    {
+        accessorKey: "IdSeccionOK",
+        header: "IdSeccionOK",
+        size: 150, //small column
+    },
     {
         accessorKey: "Etiqueta",
         header: "Etiqueta",
@@ -26,11 +34,6 @@ const columns = [
         accessorKey: "Valor",
         header: "Valor",
         size: 30, //small column
-    },
-    {
-        accessorKey: "IdSeccionOK",
-        header: "IdSeccionOK",
-        size: 150, //small column
     },
     {
         accessorKey: "Seccion",
@@ -68,15 +71,16 @@ const OrdersFormaPagoInfoAdTable = ({datosSecSubdocProveedores, datosSeleccionad
     const [OrdenesFormaPagoInfoAdShowModal, setOrdenesFormaPagoInfoAdShowModal] = useState(false);
 
     // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
-    const [AddOrdersDetailsShowModal, setAddOrdersDetailsShowModal] = useState(false);
+    const [OrdenesFormaPagoInfoAdUpdateShowModal, setOrdenesFormaPagoInfoAdUpdateShowModal] = useState(false);
 
-    // // Función para manejar el clic en una fila
-    // const sendDataRow = (rowData) => {
-    //     // Accede a los datos necesarios del registro (rowData) y llama a tu método
-    //     const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = rowData.original;
-    //     // Actualizar el estado de los datos seleccionados
-    //     setDatosSeleccionados({IdInstitutoOK, IdNegocioOK, IdOrdenOK});
-    // };
+    // Controlar la informacion seleccionada
+    const [dataRow, setDataRow] = useState();
+
+    // Función para manejar el clic en una fila
+    const sendDataRow = (rowData) => {
+        // Guardar la informacion seleccionada
+        setDataRow(rowData.original);
+    };
 
     async function fetchData() {
         try {
@@ -106,6 +110,58 @@ const OrdersFormaPagoInfoAdTable = ({datosSecSubdocProveedores, datosSeleccionad
         fetchData();
     }, []);
 
+    // Función par eliminar detalle-paquete de órdenes
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `La Forma Pago InfoAd con el ID: ${
+                (dataRow.IdSeccionOK)
+            } será eliminada, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                // Encuentra el índice del subdocumento forma_pago que quieres actualizar
+                const FormaPagoIndex = ordenExistente.forma_pago.findIndex(formaPago => {
+                    // Encuentra el índice del subdocumento info_ad que debemos actualizar
+                    const paqueteIndex = formaPago.info_ad.findIndex(subDoc => subDoc.IdSeccionOK === dataRow.IdSeccionOK);
+
+                    // Si se encontró el subdocumento info_ad, devuelve true para detener la búsqueda
+                    return paqueteIndex !== -1;
+                });
+
+                // Verifica si se encontró el subdocumento forma_pago
+                if (FormaPagoIndex !== -1) {
+                    // Encuentra el índice del subdocumento info_ad dentro del subdocumento forma_pago encontrado
+                    const infoAdIndex = ordenExistente.forma_pago[FormaPagoIndex].info_ad.findIndex(infoAd => infoAd.IdSeccionOK === dataRow.IdSeccionOK);
+
+                    // Ahora ya tenemos los índices de forma_pago e info_ad
+                    console.log("FormaPagoIndex: ", FormaPagoIndex);
+                    console.log("infoAdIndex: ", infoAdIndex);
+
+                    // Elimina el subdocumento info_ad
+                    ordenExistente.forma_pago[FormaPagoIndex].info_ad.splice(infoAdIndex, 1);
+
+                    // Actualiza el documento con el endpoint
+                    await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
+
+                    // Mostrar mensaje de confirmación
+                    await showMensajeConfirm("InfoAd eliminada con exito");
+
+                    // Actualizar la data
+                    await fetchData();
+                }
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar la InfoAd`);
+            }
+        }
+    };
+
     return (
         <Box>
             <Box>
@@ -114,13 +170,13 @@ const OrdersFormaPagoInfoAdTable = ({datosSecSubdocProveedores, datosSeleccionad
                     initialState={{density: "compact", showGlobalFilter: true}}
                     data={ordersData}
                     state={{isLoading: loadingTable}}
-                    // enableMultiRowSelection={false}
-                    // enableRowSelection={true}
-                    // muiTableBodyRowProps={({row}) => ({
-                    //     onClick: row.getToggleSelectedHandler(),
-                    //     onClickCapture: () => sendDataRow(row),
-                    //     sx: {cursor: 'pointer'},
-                    // })}
+                    enableMultiRowSelection={false}
+                    enableRowSelection={true}
+                    muiTableBodyRowProps={({row}) => ({
+                        onClick: row.getToggleSelectedHandler(),
+                        onClickCapture: () => sendDataRow(row),
+                        sx: {cursor: 'pointer'},
+                    })}
                     renderTopToolbarCustomActions={() => (
                         <>
                             {/* ------- BARRA DE ACCIONES ------ */}
@@ -134,12 +190,16 @@ const OrdersFormaPagoInfoAdTable = ({datosSecSubdocProveedores, datosSeleccionad
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesFormaPagoInfoAdUpdateShowModal(true)}
+                                        >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => handleDelete()}
+                                        >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -157,15 +217,29 @@ const OrdersFormaPagoInfoAdTable = ({datosSecSubdocProveedores, datosSeleccionad
                                 </Box>
                             </Stack>
                             {/* ------- BARRA DE ACCIONES FIN ------ */}
-                            <OrdenesFormaPagoInfoAdModal
-                                OrdenesFormaPagoInfoAdShowModal={OrdenesFormaPagoInfoAdShowModal}
-                                setOrdenesFormaPagoInfoAdShowModal={setOrdenesFormaPagoInfoAdShowModal}
-                                datosSeleccionados={datosSeleccionados}
-                                datosSecSubdocDetalles={datosSecSubdocProveedores}
-                                onClose={() => {
-                                    setOrdenesFormaPagoInfoAdShowModal(false)
-                                }}
-                            />
+                            <Dialog open={OrdenesFormaPagoInfoAdShowModal}>
+                                <OrdenesFormaPagoInfoAdModal
+                                    OrdenesFormaPagoInfoAdShowModal={OrdenesFormaPagoInfoAdShowModal}
+                                    setOrdenesFormaPagoInfoAdShowModal={setOrdenesFormaPagoInfoAdShowModal}
+                                    datosSeleccionados={datosSeleccionados}
+                                    datosSecSubdocDetalles={datosSecSubdocProveedores}
+                                    onClose={() => {
+                                        setOrdenesFormaPagoInfoAdShowModal(false)
+                                    }}
+                                />
+                            </Dialog>
+                            <Dialog open={OrdenesFormaPagoInfoAdUpdateShowModal}>
+                                <OrdenesFormaPagoInfoAdUpdateModal
+                                    OrdenesFormaPagoInfoAdUpdateShowModal={OrdenesFormaPagoInfoAdUpdateShowModal}
+                                    setOrdenesFormaPagoInfoAdUpdateShowModal={setOrdenesFormaPagoInfoAdUpdateShowModal}
+                                    datosSeleccionados={datosSeleccionados}
+                                    datosSecSubdocDetalles={datosSecSubdocProveedores}
+                                    dataRow={dataRow}
+                                    onClose={() => {
+                                        setOrdenesFormaPagoInfoAdUpdateShowModal(false)
+                                    }}
+                                />
+                            </Dialog>
                         </>
                     )}
                 />
