@@ -1,43 +1,31 @@
 import {Box, Tabs, Tab} from "@mui/material";
 import React, {useState} from "react";
 
-const ordersTabs = ["Ordenes", "Estatus", "Info", "Detalles", "Forma pago", "Factura", "Cliente", "Vendedor", "Envios"];
+const ordersTabs = ["envios", "info_ad", "productos", "estatus", "rastreos"];
 
-const OrdersNavTab = ({setCurrentRowInOrdersTab, setCurrentNameTabInPrincipalTab}) => {
+const OrdenesEnviosNavTab = ({currentRowInProveedoresTab, setCurrentNameTabInProveedoresTab}) => {
 
     const [currenTabIndex, setCurrentTabIndex] = useState(0);
     const handleChange = (e) => {
 
-        setCurrentNameTabInPrincipalTab(e.target.innerText.toUpperCase());
+        setCurrentNameTabInProveedoresTab(e.target.innerText.toUpperCase());
 
         switch (e.target.innerText.toUpperCase()) {
-            case "ORDENES":
+            case "ENVIOS":
                 setCurrentTabIndex(0);
                 break;
-            case "ESTATUS":
+            case "INFO_AD":
                 setCurrentTabIndex(1);
                 break;
-            case "INFO":
+            case "PRODUCTOS":
                 setCurrentTabIndex(2);
                 break;
-            case "DETALLES":
+            case "ESTATUS":
                 setCurrentTabIndex(3);
                 break;
-            case "FORMA PAGO":
+            case "RASTREOS":
                 setCurrentTabIndex(4);
                 break;
-            case "FACTURA":
-                setCurrentTabIndex(5);
-                break;
-            case "CLIENTE":
-                setCurrentTabIndex(6);
-                break;
-            case "VENDEDOR":
-                setCurrentTabIndex(7);
-                break;
-            case "ENVIOS":
-                setCurrentTabIndex(8);
-                break
         }
 
     };
@@ -52,10 +40,10 @@ const OrdersNavTab = ({setCurrentRowInOrdersTab, setCurrentNameTabInPrincipalTab
                 textColor="primary"
             >
                 {ordersTabs.map((tab) => {
-                    return <Tab key={tab} label={tab} disabled={setCurrentRowInOrdersTab === null}/>;
+                    return <Tab key={tab} label={tab} disabled={currentRowInProveedoresTab === null}/>;
                 })}
             </Tabs>
         </Box>
     );
 };
-export default OrdersNavTab;
+export default OrdenesEnviosNavTab;

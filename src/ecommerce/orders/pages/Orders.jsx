@@ -6,6 +6,10 @@ import OrdenesTab from "../components/tabs/OrdenesTab.jsx";
 import OrdenesInfo from "../components/tabs/OrdenesInfo.jsx";
 import OrdenesDetallesTab from "../components/tabs/OrdenesDetallesTab.jsx";
 import OrdenesFormaPagoTab from "../components/tabs/OrdenesFormaPagoTab.jsx";
+import OrdenesFacturaTab from "../components/tabs/shippingsTabs/OrdenesFacturaTab.jsx";
+import OrdenesClientes from "../components/tabs/shippingsTabs/OrdenesClientes.jsx";
+import OrdenesVendedor from "../components/tabs/shippingsTabs/OrdenesVendedor.jsx";
+import OrdenesEnviosTab from "../components/tabs/shippingsTabs/OrdenesEnviosTab.jsx";
 
 export default function Orders() {
 
@@ -57,6 +61,32 @@ export default function Orders() {
                 <OrdenesFormaPagoTab
                     datosSeleccionados={datosSeleccionados}
                     setDatosSeleccionados={setDatosSeleccionados}
+                />
+            }
+
+            {
+                ///////////////////////////////////////////////////////////
+                // **** Aqui se agregan las demas tabs de shippings **** //
+                ///////////////////////////////////////////////////////////
+            }
+            {currentNameTabInPrincipalTab == "FACTURA" &&
+                <OrdenesFacturaTab
+                    datosSeleccionados={datosSeleccionados}
+                />
+            }
+            {currentNameTabInPrincipalTab == "CLIENTE" &&
+                <OrdenesClientes
+                    datosSeleccionados={datosSeleccionados}
+                />
+            }
+            {currentNameTabInPrincipalTab == "VENDEDOR" &&
+                <OrdenesVendedor
+                    datosSeleccionados={datosSeleccionados}
+                />
+            }
+            {currentNameTabInPrincipalTab == "ENVIOS" &&
+                <OrdenesEnviosTab
+                    datosSeleccionados={datosSeleccionados}
                 />
             }
         </Box>
