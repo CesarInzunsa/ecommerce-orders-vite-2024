@@ -1,9 +1,12 @@
 import {Box} from "@mui/material";
+import OrdenesClienteTable from "./tables/OrdenesClienteTable.jsx";
 
 export default function OrdenesClientes({datosSeleccionados}) {
     return (
         <Box>
-            <h1>Clientes</h1>
+            <OrdenesClienteTable
+                datosSeleccionados={datosSeleccionados}
+            />
         </Box>
     );
 }

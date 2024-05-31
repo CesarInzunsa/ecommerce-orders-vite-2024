@@ -1,9 +1,13 @@
 import {Box} from "@mui/material";
+import OrdersEnviosEstatusTable from "./tables/OrdersEnviosEstatusTable.jsx";
 
 export default function OrdenesEnviosEstatus({datosSeleccionados, datosSecSubdoc}) {
     return (
         <Box>
-            <h1>estatus</h1>
+            <OrdersEnviosEstatusTable
+                datosSeleccionados={datosSeleccionados}
+                datosSecSubdoc={datosSecSubdoc}
+            />
         </Box>
     );
 }

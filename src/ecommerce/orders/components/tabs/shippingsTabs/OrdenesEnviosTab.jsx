@@ -10,7 +10,7 @@ import OrdenesEnvios from "./OrdenesEnvios.jsx";
 import OrdenesEnviosInfoAd from "./OrdenesEnviosInfoAd.jsx";
 import OrdenesEnviosProductos from "./OrdenesEnviosProductos.jsx";
 import OrdenesEnviosEstatus from "./OrdenesEnviosEstatus.jsx";
-import OrdenesClientesRastreosTab from "./OrdenesClientesRastreosTab.jsx";
+import OrdenesEnviosRastreosTab from "./OrdenesEnviosRastreosTab.jsx";
 
 export default function OrdenesEnviosTab({datosSeleccionados}) {
 
@@ -62,7 +62,7 @@ export default function OrdenesEnviosTab({datosSeleccionados}) {
             }
 
             {currentNameTabInProveedoresTab == "RASTREOS" &&
-                <OrdenesClientesRastreosTab
+                <OrdenesEnviosRastreosTab
                     datosSeleccionados={datosSeleccionados}
                     datosSecSubdoc={datosSecSubdoc}
                 />

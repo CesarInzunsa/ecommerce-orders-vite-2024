@@ -1,9 +1,14 @@
 import {Box} from "@mui/material";
+import OrdersFacturaProductosTable from "./tables/OrdersFacturaProductosTable.jsx";
 
-export default function OrdenesFacturasProductos({datosSeleccionados, setDatosSecSubdoc, setDatosSecSubdocProductos}) {
+export default function OrdenesFacturasProductos({datosSeleccionados, datosSecSubdoc, setDatosSecSubdocProductos}) {
     return (
         <Box>
-            <h1>Productos</h1>
+            <OrdersFacturaProductosTable
+                datosSeleccionados={datosSeleccionados}
+                datosSecSubdoc={datosSecSubdoc}
+                setDatosSecSubdocProductos={setDatosSecSubdocProductos}
+            />
         </Box>
     );
 }

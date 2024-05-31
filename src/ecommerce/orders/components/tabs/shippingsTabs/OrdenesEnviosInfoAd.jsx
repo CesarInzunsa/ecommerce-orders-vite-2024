@@ -1,9 +1,13 @@
 import {Box} from "@mui/material";
+import OrdersEnviosInfoAdTable from "./tables/OrdersEnviosInfoAdTable.jsx";
 
 export default function OrdenesEnviosInfoAd({datosSeleccionados, datosSecSubdoc}) {
     return (
         <Box>
-            <h1>InfoAd</h1>
+            <OrdersEnviosInfoAdTable
+                datosSeleccionados={datosSeleccionados}
+                datosSecSubdoc={datosSecSubdoc}
+            />
         </Box>
     );
 }

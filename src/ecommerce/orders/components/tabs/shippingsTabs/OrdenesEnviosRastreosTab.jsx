@@ -11,7 +11,7 @@ import OrdenesEnviosRastreosNavTab from "./OrdenesEnviosRastreosNavTab.jsx";
 import OrdenesEnviosRastreos from "./OrdenesEnviosRastreos.jsx";
 import OrdenesEnviosRastreosSeguimiento from "./OrdenesEnviosRastreosSeguimiento.jsx";
 
-export default function OrdenesClientesRastreosTab({datosSeleccionados, datosSecSubdoc}) {
+export default function OrdenesEnviosRastreosTab({datosSeleccionados, datosSecSubdoc}) {
 
     // indicamos que al iniciar no hay ningun Instituto seleccionado.
     const [currentRowInProveedoresTab, setCurrentRowInProveedoresTab] = useState(1);
@@ -21,8 +21,8 @@ export default function OrdenesClientesRastreosTab({datosSeleccionados, datosSec
 
     // indicamos que el estado inicial de los datos del subdocumento
     const [datosSecSubdocRastreos, setDatosSecSubdocRastreos] = useState({
-        IdRepartidorOK: "0",
         NumeroGuia: "0",
+        IdRepartidorOK: "0",
     });
 
     return (
@@ -35,7 +35,7 @@ export default function OrdenesClientesRastreosTab({datosSeleccionados, datosSec
             {currentNameTabInProveedoresTab == "RASTREOS" &&
                 <OrdenesEnviosRastreos
                     datosSeleccionados={datosSeleccionados}
-                    setDatosSecSubdoc={datosSecSubdoc}
+                    datosSecSubdoc={datosSecSubdoc}
                     setDatosSecSubdocRastreos={setDatosSecSubdocRastreos}
                 />
             }

@@ -1,9 +1,14 @@
 import {Box} from "@mui/material";
+import OrdersEnviosRastreosTable from "./tables/OrdersEnviosRastreosTable.jsx";
 
-export default function OrdenesEnviosRastreos({datosSeleccionados, setDatosSecSubdoc, setDatosSecSubdocRastreos}) {
+export default function OrdenesEnviosRastreos({datosSeleccionados, datosSecSubdoc, setDatosSecSubdocRastreos}) {
     return (
         <Box>
-            <h1>Rastreos</h1>
+            <OrdersEnviosRastreosTable
+                datosSeleccionados={datosSeleccionados}
+                datosSecSubdoc={datosSecSubdoc}
+                setDatosSecSubdocRastreos={setDatosSecSubdocRastreos}
+            />
         </Box>
     );
 }

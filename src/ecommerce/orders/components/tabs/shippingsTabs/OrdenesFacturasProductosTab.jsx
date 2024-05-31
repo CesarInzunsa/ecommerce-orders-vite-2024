@@ -32,7 +32,7 @@ export default function OrdenesFacturasProductosTab({datosSeleccionados, datosSe
             {currentNameTabInProveedoresTab == "PRODUCTOS" &&
                 <OrdenesFacturasProductos
                     datosSeleccionados={datosSeleccionados}
-                    setDatosSecSubdoc={datosSecSubdoc}
+                    datosSecSubdoc={datosSecSubdoc}
                     setDatosSecSubdocProductos={setDatosSecSubdocProductos}
                 />
             }
