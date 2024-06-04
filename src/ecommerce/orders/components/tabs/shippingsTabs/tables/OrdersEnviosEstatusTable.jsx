@@ -13,6 +13,14 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import {GetOneOrder} from '../../../../services/remote/get/GetOneOrder.jsx';
 
 // Modals
+import OrdenesEnviosEstatusModal from "../../../modals/patchModals/OrdenesEnviosEstatusModal.jsx";
+import OrdenesUpdateEnviosEstatusModal from "../../../modals/updateModals/OrdenesUpdateEnviosEstatusModal.jsx";
+import {UpdatePatchOneOrder} from "../../../../services/remote/put/UpdatePatchOneOrder.jsx";
+import {
+    showMensajeConfirm,
+    showMensajeError
+} from "../../../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import OrdenesDetailsEnviosEstatusModal from "../../../modals/detailsModals/OrdenesDetailsEnviosEstatusModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -53,6 +61,15 @@ const OrdersEnviosEstatusTable = ({datosSeleccionados, datosSecSubdoc}) => {
     // controlar el estado de la data.
     const [ordersData, setOrdersData] = useState([]);
 
+    // controlar el estado que muesta u oculta el modal para insertar el nuevo subdocumento.
+    const [OrdenesEnviosEstatusShowModal, setOrdenesEnviosEstatusShowModal] = useState(false);
+
+    // controllar el estado que muestra u oculta el modal para actualizar el subdocumento.
+    const [OrdenesUpdateEnviosEstatusShowModal, setOrdenesUpdateEnviosEstatusShowModal] = useState(false);
+
+    // controlar el estado que muestra u oculta el modal para ver los detalles del subdocumento.
+    const [OrdenesDetailsEnviosEstatusShowModal, setOrdenesDetailsEnviosEstatusShowModal] = useState(false);
+
     // Controlar la informacion seleccionada
     const [dataRow, setDataRow] = useState();
 
@@ -90,6 +107,55 @@ const OrdersEnviosEstatusTable = ({datosSeleccionados, datosSecSubdoc}) => {
         setDataRow(rowData.original);
     };
 
+    // Funcion par eliminar estatus órdenes
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `El estatus con el ID: ${
+                (dataRow.IdTipoEstatusOK)
+            } será eliminada, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                // Determinar el indice del subdocumento seleccionado
+                const index = ordenExistente.envios.findIndex((elemento) => (
+                    elemento.IdDomicilioOK === datosSecSubdoc.IdDomicilioOK && elemento.IdPaqueteriaOK === datosSecSubdoc.IdPaqueteriaOK
+                ));
+
+
+                // Verifica si se encontró el subdocumento detalle_ps
+                if (index !== -1) {
+                    // Encuentra el índice del subdocumento estatus dentro del subdocumento detalle_ps encontrado
+                    const estatusIndex = ordenExistente.envios[index].estatus.findIndex(datosSecSubdoc => datosSecSubdoc.IdTipoEstatusOK === dataRow.IdTipoEstatusOK);
+
+                    // Ahora ya tenemos los índices de detalle_ps e estatus
+                    console.log("detallePsIndex: ", index);
+                    console.log("estatusIndex: ", estatusIndex);
+
+                    // Elimina el subdocumento estatus
+                    ordenExistente.envios[index].estatus.splice(estatusIndex, 1);
+
+                    // Actualiza el documento con el endpoint
+                    await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
+
+                    // Mostrar mensaje de confirmación
+                    await showMensajeConfirm("Estatus eliminado con exito");
+
+                    // Actualizar la data
+                    await fetchData();
+                }
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar el estatus`);
+            }
+        }
+    };
+
     return (
         <Box>
             <Box>
@@ -112,27 +178,29 @@ const OrdersEnviosEstatusTable = ({datosSeleccionados, datosSecSubdoc}) => {
                                 <Box>
                                     <Tooltip title="Agregar">
                                         <IconButton
-                                            //onClick={() => setOrdenesDetallesEstatusShowModal(true)}
+                                            onClick={() => setOrdenesEnviosEstatusShowModal(true)}
                                         >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
                                         <IconButton
-                                            //onClick={() => setOrdenesUpdateDetallesEstatusShowModal(true)}
+                                            onClick={() => setOrdenesUpdateEnviosEstatusShowModal(true)}
                                         >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
                                         <IconButton
-                                            //onClick={() => handleDelete()}
+                                            onClick={() => handleDelete()}
                                         >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesDetailsEnviosEstatusShowModal(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -149,10 +217,37 @@ const OrdersEnviosEstatusTable = ({datosSeleccionados, datosSecSubdoc}) => {
                     )}
                 />
                 {/* M O D A L E S */}
-                {/*<Dialog open={OrdenesDetallesEstatusShowModal}>*/}
-                {/*</Dialog>*/}
-                {/*<Dialog open={OrdenesUpdateDetallesEstatusShowModal}>*/}
-                {/*</Dialog>*/}
+                <Dialog open={OrdenesEnviosEstatusShowModal}>
+                    <OrdenesEnviosEstatusModal
+                        OrdenesEnviosEstatusShowModal={OrdenesEnviosEstatusShowModal}
+                        setOrdenesEnviosEstatusShowModal={setOrdenesEnviosEstatusShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdocEnvios={datosSecSubdoc}
+                        onClose={() => {
+                            setOrdenesEnviosEstatusShowModal(false)
+                        }}
+                        fetchData={fetchData}
+                    />
+                </Dialog>
+                <Dialog open={OrdenesUpdateEnviosEstatusShowModal}>
+                    <OrdenesUpdateEnviosEstatusModal
+                        OrdenesUpdateEnviosEstatusShowModal={OrdenesUpdateEnviosEstatusShowModal}
+                        setOrdenesUpdateEnviosEstatusShowModal={setOrdenesUpdateEnviosEstatusShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdocEnvios={datosSecSubdoc}
+                        dataRow={dataRow}
+                        onClose={() => setOrdenesUpdateEnviosEstatusShowModal(false)}
+                        fetchData={fetchData}
+                    />
+                </Dialog>
+                <Dialog open={OrdenesDetailsEnviosEstatusShowModal}>
+                    <OrdenesDetailsEnviosEstatusModal
+                        OrdenesDetailsEnviosEstatusShowModal={OrdenesDetailsEnviosEstatusShowModal}
+                        setOrdenesDetailsEnviosEstatusShowModal={setOrdenesDetailsEnviosEstatusShowModal}
+                        dataRow={dataRow}
+                        onClose={() => setOrdenesDetailsEnviosEstatusShowModal(false)}
+                    />
+                </Dialog>
             </Box>
         </Box>
     );
