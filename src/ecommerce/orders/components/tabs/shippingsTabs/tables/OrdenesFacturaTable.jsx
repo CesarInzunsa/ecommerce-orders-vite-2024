@@ -8,11 +8,16 @@ import EditIcon from "@mui/icons-material/Edit";
 import InfoIcon from "@mui/icons-material/Info";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RefreshIcon from "@mui/icons-material/Refresh";
-
+import OrdenesFacturaFacturaModal from '../../../modals/patchModals/OrdenesFacturaFacturaModal.jsx';
+import OrdenesUpdateFacturaFacturaModal from "../../../modals/updateModals/OrdenesUpdateFacturaFacturaModal.jsx";
+import {
+    showMensajeConfirm,
+    showMensajeError
+} from "../../../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import {UpdatePatchOneOrder} from "../../../../services/remote/put/UpdatePatchOneOrder.jsx";
 // DB
 import {GetOneOrder} from '../../../../services/remote/get/GetOneOrder.jsx';
-
-// Modals
+import OrdenesDetailsFacturaFacturaModal from "../../../modals/detailsModals/OrdenesDetailsFacturaFacturaModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -56,8 +61,16 @@ const columns = [
 // Table - FrontEnd.
 const OrdenesFacturaTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
 
+
     // controlar el estado del indicador (loading).
     const [loadingTable, setLoadingTable] = useState(true);
+
+    const [OrdenesFacturaShowModal, setOrdenesFacturaShowModal] = useState(false);
+
+    const [OrdenesUpdateFacturaShowModal, setOrdenesUpdateFacturaShowModal] = useState(false);
+
+    // CONTROLAR EL ESTADO DE LA VENTANA MODAL
+    const [OrdenesDetailsFacturaShowModal, setOrdenesDetailsFacturaShowModal] = useState(false);
 
     // controlar el estado de la data.
     const [ordersData, setOrdersData] = useState([]);
@@ -65,19 +78,61 @@ const OrdenesFacturaTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
     // Controlar el estado de la fila seleccionada.
     const [dataRow, setDataRow] = useState({});
 
-    // Función para manejar el clic en una fila
+    // FunciÃ³n para manejar el clic en una fila
     const sendDataRow = (rowData) => {
         // Guardar la informacion seleccionada
         setDataRow(rowData.original);
 
         // Extraer los ids seleccionados
-        const {IdPersonaOK} = dataRow;
+        const {IdPersonaOK} = rowData.original;
         setDatosSecSubdoc({IdPersonaOK});
 
         console.log(IdPersonaOK);
     };
 
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `La dirección de la factura con el ID: ${
+                (dataRow.IdPersonaOK)
+            } será eliminada, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                const selectedRowIndex = ordersData.findIndex((row) => dataRow.IdPersonaOK === row.IdPersonaOK);
+
+                if (selectedRowIndex === -1) {
+                    return;
+                }
+                console.log(selectedRowIndex)
+
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+                const facturaArray = [...ordenExistente.factura];
+                facturaArray.splice(selectedRowIndex, 1);
+                const dataToUpdate = {
+                    factura: facturaArray,
+                };
+
+
+                await UpdatePatchOneOrder?.(IdInstitutoOK, IdNegocioOK, IdOrdenOK, dataToUpdate);
+
+                // Mostrar mensaje de confirmación
+                await showMensajeConfirm("Estatus eliminado con exito");
+
+                // Actualizar la data
+                await fetchData();
+
+
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar`);
+            }
+        }
+    };
+
     async function fetchData() {
+        setLoadingTable(true);
         try {
             // Obtener los id's seleccionados
             const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
@@ -97,6 +152,7 @@ const OrdenesFacturaTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
             setLoadingTable(false);
         } catch (error) {
             console.error("Error al obtener la data en useEffect: ", error);
+            setLoadingTable(false);
         }
     }
 
@@ -126,27 +182,29 @@ const OrdenesFacturaTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
                                 <Box>
                                     <Tooltip title="Agregar">
                                         <IconButton
-                                            //onClick={() => setOrdenesInfoAdShowModal(true)}
+                                            onClick={() => setOrdenesFacturaShowModal(true)}
                                         >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
                                         <IconButton
-                                            //onClick={() => setOrdenesUpdateInfoAdShowModal(true)}
+                                            onClick={() => setOrdenesUpdateFacturaShowModal(true)}
                                         >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
                                         <IconButton
-                                            //onClick={() => handleDelete()}
+                                            onClick={() => handleDelete()}
                                         >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesDetailsFacturaShowModal(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -158,14 +216,44 @@ const OrdenesFacturaTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
                                     </Tooltip>
                                 </Box>
                             </Stack>
-                            {/* ------- BARRA DE ACCIONES FIN ------ */}
-                            {/* M O D A L E S */}
-                            {/*<Dialog open={OrdenesInfoAdShowModal}>*/}
+                            <Dialog open={OrdenesFacturaShowModal}>
+                                <OrdenesFacturaFacturaModal
+                                    OrdenesFacturaShowModal={OrdenesFacturaShowModal}
+                                    setOrdenesFacturaShowModal={setOrdenesFacturaShowModal}
+                                    datosSeleccionados={datosSeleccionados}
+                                    fetchData={fetchData}
+                                    onClose={() => {
+                                        setOrdenesFacturaShowModal(false)
+                                    }}
+                                />
 
-                            {/*</Dialog>*/}
-                            {/*<Dialog open={OrdenesUpdateInfoAdShowModal}>*/}
+                            </Dialog>
 
-                            {/*</Dialog>*/}
+                            <Dialog open={OrdenesUpdateFacturaShowModal}>
+                                <OrdenesUpdateFacturaFacturaModal
+                                    OrdenesUpdateFacturaShowModal={OrdenesUpdateFacturaShowModal}
+                                    setOrdenesUpdateFacturaShowModal={setOrdenesUpdateFacturaShowModal}
+                                    datosSeleccionados={datosSeleccionados}
+                                    dataRow={dataRow}
+                                    fetchData={fetchData}
+                                    onClose={() => {
+                                        setOrdenesUpdateFacturaShowModal(false)
+                                    }}
+                                />
+
+                            </Dialog>
+
+                            <Dialog open={OrdenesDetailsFacturaShowModal}>
+                                <OrdenesDetailsFacturaFacturaModal
+                                    OrdenesDetailsFacturaShowModal={OrdenesDetailsFacturaShowModal}
+                                    setOrdenesDetailsFacturaShowModal={setOrdenesDetailsFacturaShowModal}
+                                    dataRow={dataRow}
+                                    onClose={() => {
+                                        setOrdenesDetailsFacturaShowModal(false)
+                                    }}
+                                />
+
+                            </Dialog>
                         </>
                     )}
                 />

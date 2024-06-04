@@ -58,6 +58,9 @@ const OrdenesEnviosTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
         const {IdDomicilioOK, IdPaqueteriaOK} = rowData.original;
 
         setDatosSecSubdoc({IdDomicilioOK, IdPaqueteriaOK});
+
+        //Jesus
+        localStorage.setItem("envioSeleccionado", JSON.stringify(rowData.original));
     };
 
     async function fetchData() {

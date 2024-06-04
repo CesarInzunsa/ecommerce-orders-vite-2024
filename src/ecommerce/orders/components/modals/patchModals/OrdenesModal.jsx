@@ -252,7 +252,6 @@ const OrdenesModal = ({PatchOrdenesShowModal, setPatchOrdenesShowModal, dataRow,
                             onChange={formik.handleChange}
                             name="IdNegocioOK" // Asegúrate de que coincida con el nombre del campo
                             onBlur={formik.handleBlur}
-                            disabled={!!mensajeExitoAlert}
                             error={formik.touched.IdNegocioOK && Boolean(formik.errors.IdNegocioOK)}
                             helperText={formik.touched.IdNegocioOK && formik.errors.IdNegocioOK}
                             disabled={true}

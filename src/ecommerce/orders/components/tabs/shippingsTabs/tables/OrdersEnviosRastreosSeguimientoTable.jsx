@@ -11,6 +11,17 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 
 // DB
 import {GetOneOrder} from '../../../../services/remote/get/GetOneOrder.jsx';
+import OrdenesEnviosRastreosSeguimientoModal
+    from "../../../modals/patchModals/OrdenesEnviosRastreosSeguimientoModal.jsx";
+import OrdenesEnviosRastreosSeguimientoModalUpdate
+    from "../../../modals/updateModals/OrdenesEnviosRastreosSeguimientoModalUpdate.jsx";
+import {
+    showMensajeConfirm,
+    showMensajeError
+} from "../../../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import {UpdatePatchOneOrder} from "../../../../services/remote/put/UpdatePatchOneOrder.jsx";
+import OrdenesEnviosRastreosSeguimientoModalDetails
+    from "../../../modals/detailsModals/OrdenesEnviosRastreosSeguimientoModalDetails.jsx";
 
 // Modals
 
@@ -71,6 +82,15 @@ const OrdersEnviosRastreosSeguimientoTable = ({datosSeleccionados, datosSecSubdo
     // controlar el estado de la data.
     const [ordersData, setOrdersData] = useState([]);
 
+    // Controlar el estado del modal
+    const [OrdenesEnviosRastreosSeguimientoModalShowModal, setOrdenesEnviosRastreosSeguimientoModalShowModal] = useState(false);
+
+    // Controlar el estado del modal update
+    const [OrdenesEnviosRastreosSeguimientoModalShowModalUpdate, setOrdenesEnviosRastreosSeguimientoModalShowModalUpdate] = useState(false);
+
+    // controlar el estado del modal details
+    const [OrdenesEnviosRastreosSeguimientoModalShowModalDetails, setOrdenesEnviosRastreosSeguimientoModalShowModalDetails] = useState(false);
+
     // Controlar la informacion seleccionada
     const [dataRow, setDataRow] = useState();
 
@@ -111,11 +131,59 @@ const OrdersEnviosRastreosSeguimientoTable = ({datosSeleccionados, datosSecSubdo
     const sendDataRow = (rowData) => {
         // Guardar la informacion seleccionada
         setDataRow(rowData.original);
+    };
 
-        // extrar los ids
-        const {IdProdServOK, IdPresentaOK} = dataRow;
+    //Eliminar
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `El producto con el ID: ${
+                (dataRow.Ubicacion)
+            } será eliminado, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
 
-        setDatosSecSubdocProductos({IdProdServOK, IdPresentaOK});
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                // Determinar el indice del subdocumento de envios
+                const indexEnvios = ordenExistente.envios.findIndex((elemento) => (
+                    elemento.IdDomicilioOK === datosSecSubdoc.IdDomicilioOK && elemento.IdPaqueteriaOK === datosSecSubdoc.IdPaqueteriaOK
+                ));
+
+                // Determinar el indice del subdocumento de rastreos
+                const indexRastreos = ordenExistente.envios[indexEnvios].rastreos.findIndex((elemento) => (
+                    elemento.NumeroGuia === datosSecSubdocRastreos.NumeroGuia
+                ));
+
+                // Buscar el indice del seguimiento seleccionado
+                const indexSeguimiento = ordenExistente.envios[indexEnvios].rastreos[indexRastreos].seguimiento.findIndex((elemento) => (
+                    elemento.Ubicacion === dataRow.Ubicacion
+                ));
+
+                if (indexSeguimiento === -1) {
+                    showMensajeError(`No se pudo eliminar el seguimiento`);
+                    return;
+                }
+
+                // Elimina el subdocumento seguimiento dentro de rastreos
+                ordenExistente.envios[indexEnvios].rastreos[indexRastreos].seguimiento.splice(indexSeguimiento, 1);
+
+                // Actualiza el documento con el endpoint
+                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
+
+                // Mostrar mensaje de confirmación
+                await showMensajeConfirm("Seguimiento eliminado con exito");
+
+                // Actualizar la data
+                await fetchData();
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar el producto`);
+            }
+        }
     };
 
     return (
@@ -140,27 +208,29 @@ const OrdersEnviosRastreosSeguimientoTable = ({datosSeleccionados, datosSecSubdo
                                 <Box>
                                     <Tooltip title="Agregar">
                                         <IconButton
-                                            //onClick={() => setOrdenesDetallesEstatusShowModal(true)}
+                                            onClick={() => setOrdenesEnviosRastreosSeguimientoModalShowModal(true)}
                                         >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
                                         <IconButton
-                                            //onClick={() => setOrdenesUpdateDetallesEstatusShowModal(true)}
+                                            onClick={() => setOrdenesEnviosRastreosSeguimientoModalShowModalUpdate(true)}
                                         >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
                                         <IconButton
-                                            //onClick={() => handleDelete()}
+                                            onClick={() => handleDelete()}
                                         >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesEnviosRastreosSeguimientoModalShowModalDetails(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -177,10 +247,45 @@ const OrdersEnviosRastreosSeguimientoTable = ({datosSeleccionados, datosSecSubdo
                     )}
                 />
                 {/* M O D A L E S */}
-                {/*<Dialog open={OrdenesDetallesEstatusShowModal}>*/}
-                {/*</Dialog>*/}
-                {/*<Dialog open={OrdenesUpdateDetallesEstatusShowModal}>*/}
-                {/*</Dialog>*/}
+                <Dialog open={OrdenesEnviosRastreosSeguimientoModalShowModal}>
+                    <OrdenesEnviosRastreosSeguimientoModal
+                        OrdenesEnviosRastreosSeguimientoModalShowModal={OrdenesEnviosRastreosSeguimientoModalShowModal}
+                        setOrdenesEnviosRastreosSeguimientoModalShowModal={setOrdenesEnviosRastreosSeguimientoModalShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdoc={datosSecSubdoc}
+                        datosSecSubdocRastreos={datosSecSubdocRastreos}
+                        fetchData={fetchData}
+                        onClose={() => {
+                            setOrdenesEnviosRastreosSeguimientoModalShowModal(false);
+                        }}
+                    />
+                </Dialog>
+                <Dialog open={OrdenesEnviosRastreosSeguimientoModalShowModalUpdate}>
+                    <OrdenesEnviosRastreosSeguimientoModalUpdate
+                        OrdenesEnviosRastreosSeguimientoModalShowModalUpdate={OrdenesEnviosRastreosSeguimientoModalShowModalUpdate}
+                        setOrdenesEnviosRastreosSeguimientoModalShowModalUpdate={setOrdenesEnviosRastreosSeguimientoModalShowModalUpdate}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdoc={datosSecSubdoc}
+                        datosSecSubdocRastreos={datosSecSubdocRastreos}
+                        fetchData={fetchData}
+                        onClose={() => {
+                            setOrdenesEnviosRastreosSeguimientoModalShowModalUpdate(false);
+                        }}
+                        dataRow={dataRow}
+                    />
+                </Dialog>
+
+                <Dialog open={OrdenesEnviosRastreosSeguimientoModalShowModalDetails}>
+                    <OrdenesEnviosRastreosSeguimientoModalDetails
+                        OrdenesEnviosRastreosSeguimientoModalShowModalDetails={OrdenesEnviosRastreosSeguimientoModalShowModalDetails}
+                        setOrdenesEnviosRastreosSeguimientoModalShowModalDetails={setOrdenesEnviosRastreosSeguimientoModalShowModalDetails}
+                        onClose={() => {
+                            setOrdenesEnviosRastreosSeguimientoModalShowModalDetails(false);
+                        }}
+                        dataRow={dataRow}
+                    />
+                </Dialog>
+
             </Box>
         </Box>
     );

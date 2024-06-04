@@ -23,18 +23,20 @@ import {useFormik} from "formik";
 import * as Yup from "yup";
 
 //HELPERS
-import {OrdenesEstatusValues} from "../../../helpers/OrdenesEstatusValues.jsx";
+import {OrdenesEnviosProductosValues} from "../../../helpers/OrdenesEnviosProductosValues.jsx";
 import {UpdatePatchOneOrder} from "../../../services/remote/put/UpdatePatchOneOrder";
+import {PutOneOrder} from "../../../services/remote/put/PutOneOrder.jsx";
 import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
 import {GetAllLabels} from "../../../services/remote/get/GetAllLabels";
+import {GetAllProdServ} from "../../../services/remote/get/GetAllProdServ.jsx";
 
-const OrdenesUpdateEstatusModal = ({
-                                       OrdenesUpdateEstatusShowModal,
-                                       setOrdenesUpdateEstatusShowModal,
-                                       datosSeleccionados,
-                                       dataRow,
-                                       fetchData
-                                   }) => {
+const OrdenesFacturaProductosModal = ({
+                                          OrdenesFacturaProductosShowModal,
+                                          setOrdenesFacturaProductosShowModal,
+                                          datosSeleccionados,
+                                          datosSecSubdoc,
+                                          fetchData
+                                      }) => {
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
     const [Loading, setLoading] = useState(false);
@@ -45,13 +47,16 @@ const OrdenesUpdateEstatusModal = ({
     //FIC: Definition Formik y Yup.
     const formik = useFormik({
         initialValues: {
-            IdTipoEstatusOK: dataRow.IdTipoEstatusOK || "",
-            Actual: dataRow.Actual === "S" ? true : false,
-            Observacion: dataRow.Observacion || "",
+            IdProdServOK: "",
+            IdPresentaOK: "",
+            Cantidad: 0,
+            PrecioUnitario: 0,
         },
         validationSchema: Yup.object({
-            IdTipoEstatusOK: Yup.string().required("Campo requerido"),
-            Actual: Yup.boolean().required("Campo requerido"),
+            IdProdServOK: Yup.string().required("IdProdServOK es requerido"),
+            IdPresentaOK: Yup.string().required("IdPresentaOK es requerido"),
+            Cantidad: Yup.number().required("La cantidad es requerida"),
+            PrecioUnitario: Yup.number().required("El Precio Unitario es requerido"),
         }),
         onSubmit: async (values) => {
             //FIC: mostramos el Loading.
@@ -62,32 +67,37 @@ const OrdenesUpdateEstatusModal = ({
             //FIC: reiniciamos los estados de las alertas de exito y error.
             setMensajeErrorAlert(null);
             setMensajeExitoAlert(null);
-            try {
 
+            try {
+                //Se desestructuran los datos del documento seleccionado
                 const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
 
+                //Obtener la orden seleccionada
                 const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
 
-                for (let i = 0; i < ordenExistente.estatus.length; i++) {
-                    if (ordenExistente.estatus[i].IdTipoEstatusOK === dataRow.IdTipoEstatusOK) {
-                        ordenExistente.estatus[i].Actual = values.Actual === true ? "S" : "N";
-                        ordenExistente.estatus[i].Observacion = values.Observacion;
-                    }
-                }
+                // obtener el indice de la factura
+                const indexFactura = ordenExistente.factura.findIndex((value) => {
+                    return value.IdPersonaOK === datosSecSubdoc.IdPersonaOK;
+                });
 
-                if(values.Actual === true){
-                    for (let i = 0; i < ordenExistente.estatus.length; i++) {
-                        if (ordenExistente.estatus[i].IdTipoEstatusOK !== dataRow.IdTipoEstatusOK) {
-                            ordenExistente.estatus[i].Actual = "N";
-                        }
-                    }
-                }
+                // crear un nuevo producto
 
+                ordenExistente.factura[indexFactura].productos.push({
+                    IdProdServOK: values.IdProdServOK,
+                    IdPresentaOK: values.IdPresentaOK,
+                    Cantidad: values.Cantidad,
+                    PrecioUnitario: values.PrecioUnitario,
+                    descuentos: []
+                });
+
+
+                // actualizar la data
                 await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
-                setMensajeExitoAlert("Envío actualizado Correctamente");
-                //usar la función para volver a cargar los datos de la tabla y que se vea la actualizada
+                setMensajeExitoAlert("Producto insertado");
+
                 fetchData();
             } catch (e) {
+                //console.log(ProductosOrdenes);
                 setMensajeExitoAlert(null);
                 setMensajeErrorAlert("No se pudo Registrar");
             }
@@ -105,36 +115,11 @@ const OrdenesUpdateEstatusModal = ({
         disabled: !!mensajeExitoAlert,
     };
 
-    async function getDataSelectOrdenesType2() {
-        try {
-            const Labels = await GetAllLabels();
-            const OrdenesTypes = Labels.find(
-                (label) => label.IdEtiquetaOK === "IdEstatusOrdenesVTA"
-            );
-            const valores = OrdenesTypes.valores; // Obtenemos el array de valores
-            const IdValoresOK = valores.map((valor, index) => ({
-                IdValorOK: valor.Valor,
-                key: valor.IdValorOK, // Asignar el índice como clave temporal
-            }));
-            setOrdenesValuesLabel(IdValoresOK);
-            console.log(OrdenesValuesLabel)
-        } catch (e) {
-            console.error(
-                "Error al obtener Etiquetas para Tipos Giros de Institutos:",
-                e
-            );
-        }
-    }
-
-    useEffect(() => {
-        getDataSelectOrdenesType2();
-    }, []);
-
 
     return (
         <Dialog
-            open={OrdenesUpdateEstatusShowModal}
-            onClose={() => setOrdenesUpdateEstatusShowModal(false)}
+            open={OrdenesFacturaProductosShowModal}
+            onClose={() => setOrdenesFacturaProductosShowModal(false)}
             fullWidth
         >
             <form onSubmit={(e) => {
@@ -143,47 +128,45 @@ const OrdenesUpdateEstatusModal = ({
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Actualizar Estado de la Orden</strong>
+                        <strong>Agregar Nuevo Producto a la factura</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
                 <DialogContent sx={{display: 'flex', flexDirection: 'column'}} dividers>
                     {/* FIC: Campos de captura o selección */}
+
                     <TextField
-                        id="IdTipoEstatusOK"
-                        label="IdTipoEstatusOK*"
-                        value={formik.values.IdTipoEstatusOK}
+                        id="IdProdServOK"
+                        label="IdProdServOK*"
+                        value={formik.values.IdProdServOK}
                         {...commonTextFieldProps}
-                        error={formik.touched.IdTipoEstatusOK && Boolean(formik.errors.IdTipoEstatusOK)}
-                        helperText={formik.touched.IdTipoEstatusOK && formik.errors.IdTipoEstatusOK}
-                        disabled={true}
-                    />
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                id="Actual"
-                                checked={formik.values.Actual}  // Suponiendo que formik.values.Actual es un booleano
-                                onChange={(event) => {
-                                    formik.setFieldValue('Actual', event.target.checked);
-                                }}
-                                {...commonTextFieldProps}
-                                disabled={true}
-                            />
-                        }
-                        label="Actual*"
-                        error={formik.touched.Actual && Boolean(formik.errors.Actual)}
-                        helperText={formik.touched.Actual && formik.errors.Actual}
+                        error={formik.touched.IdProdServOK && Boolean(formik.errors.IdProdServOK)}
+                        helperText={formik.touched.IdProdServOK && formik.errors.IdProdServOK}
                     />
                     <TextField
-                        id="Observacion"
-                        label="Observacion*"
-                        multiline
-                        rows={4}
-                        maxRows={10}
-                        value={formik.values.Observacion}
+                        id="IdPresentaOK"
+                        label="IdPresentaOK*"
+                        value={formik.values.IdPresentaOK}
                         {...commonTextFieldProps}
-                        error={formik.touched.Observacion && Boolean(formik.errors.Observacion)}
-                        helperText={formik.touched.Observacion && formik.errors.Observacion}
+                        error={formik.touched.IdPresentaOK && Boolean(formik.errors.IdPresentaOK)}
+                        helperText={formik.touched.IdPresentaOK && formik.errors.IdPresentaOK}
+                    />
+
+                    <TextField
+                        id="Cantidad"
+                        label="Cantidad*"
+                        value={formik.values.Cantidad}
+                        {...commonTextFieldProps}
+                        error={formik.touched.Cantidad && Boolean(formik.errors.Cantidad)}
+                        helperText={formik.touched.Cantidad && formik.errors.Cantidad}
+                    />
+                    <TextField
+                        id="PrecioUnitario"
+                        label="PrecioUnitario*"
+                        value={formik.values.PrecioUnitario}
+                        {...commonTextFieldProps}
+                        error={formik.touched.PrecioUnitario && Boolean(formik.errors.PrecioUnitario)}
+                        helperText={formik.touched.PrecioUnitario && formik.errors.PrecioUnitario}
                     />
 
                 </DialogContent>
@@ -209,7 +192,7 @@ const OrdenesUpdateEstatusModal = ({
                         loadingPosition="start"
                         startIcon={<CloseIcon/>}
                         variant="outlined"
-                        onClick={() => setOrdenesUpdateEstatusShowModal(false)}
+                        onClick={() => setOrdenesFacturaProductosShowModal(false)}
                     >
                         <span>CERRAR</span>
                     </LoadingButton>
@@ -229,4 +212,4 @@ const OrdenesUpdateEstatusModal = ({
         </Dialog>
     );
 };
-export default OrdenesUpdateEstatusModal;
+export default OrdenesFacturaProductosModal;

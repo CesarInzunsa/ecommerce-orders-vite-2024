@@ -11,6 +11,15 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 
 // DB
 import {GetOneOrder} from '../../../../services/remote/get/GetOneOrder.jsx';
+import OrdenesDetallesInfoAdModal from "../../../modals/patchModals/OrdenesDetallesInfoAdModal.jsx";
+import OrdenesFacturaProductosModal from "../../../modals/patchModals/OrdenesFacturaProductosModal.jsx";
+import OrdenesFacturaProductosModalUpdate from "../../../modals/updateModals/OrdenesFacturaProductosModalUpdate.jsx";
+import OrdenesFacturaProductosModalDetails from "../../../modals/detailsModals/OrdenesFacturaProductosModalDetails.jsx";
+import {
+    showMensajeConfirm,
+    showMensajeError
+} from "../../../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import {UpdatePatchOneOrder} from "../../../../services/remote/put/UpdatePatchOneOrder.jsx";
 
 // Modals
 
@@ -50,7 +59,11 @@ function getDatosFiltrados(OneProductData, datosSecSubdocumentoPresenta) {
 }
 
 // Table - FrontEnd.
-const OrdersFacturaProductosTable = ({datosSeleccionados, datosSecSubdoc, setDatosSecSubdocProductos}) => {
+const OrdersFacturaProductosTable = ({
+                                         datosSeleccionados,
+                                         datosSecSubdoc,
+                                         setDatosSecSubdocProductos,
+                                     }) => {
 
     // controlar el estado del indicador (loading).
     const [loadingTable, setLoadingTable] = useState(true);
@@ -60,6 +73,15 @@ const OrdersFacturaProductosTable = ({datosSeleccionados, datosSecSubdoc, setDat
 
     // Controlar la informacion seleccionada
     const [dataRow, setDataRow] = useState();
+
+    // control modal add
+    const [OrdenesFacturaProductosShowModal, setOrdenesFacturaProductosShowModal] = useState(false);
+
+    // control modal update
+    const [OrdenesFacturaProductosShowModalUpdate, setOrdenesFacturaProductosShowModalUpdate] = useState(false);
+
+    // control modal details
+    const [OrdenesFacturaProductosShowModalDetails, setOrdenesFacturaProductosShowModalDetails] = useState(false);
 
     async function fetchData() {
         try {
@@ -102,6 +124,50 @@ const OrdersFacturaProductosTable = ({datosSeleccionados, datosSecSubdoc, setDat
         console.log("Datos seleccionados: ", {IdProdServOK, IdPresentaOK});
     };
 
+    // Funcion par eliminar estatus órdenes
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `El producto con el ID: ${
+                (dataRow.IdProdServOK)
+            } será eliminada, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                // obtener el indice de la factura
+                const indexFactura = ordenExistente.factura.findIndex((value) => {
+                    return value.IdPersonaOK === datosSecSubdoc.IdPersonaOK;
+                });
+
+                // obtener el indice del producto seleccionado dentro de la factura
+                const indexProducto = ordenExistente.factura[indexFactura].productos.findIndex((value) => {
+                    return value.IdProdServOK === dataRow.IdProdServOK;
+                });
+
+
+                ordenExistente.factura[indexFactura].productos.splice(indexProducto, 1);
+
+                // Actualiza el documento con el endpoint
+                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
+
+                // Mostrar mensaje de confirmación
+                await showMensajeConfirm("Estatus eliminado con exito");
+
+                // Actualizar la data
+                await fetchData();
+
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar el producto`);
+            }
+        }
+    };
+
     return (
         <Box>
             <Box>
@@ -124,27 +190,29 @@ const OrdersFacturaProductosTable = ({datosSeleccionados, datosSecSubdoc, setDat
                                 <Box>
                                     <Tooltip title="Agregar">
                                         <IconButton
-                                            //onClick={() => setOrdenesDetallesEstatusShowModal(true)}
+                                            onClick={() => setOrdenesFacturaProductosShowModal(true)}
                                         >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
                                         <IconButton
-                                            //onClick={() => setOrdenesUpdateDetallesEstatusShowModal(true)}
+                                            onClick={() => setOrdenesFacturaProductosShowModalUpdate(true)}
                                         >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
                                         <IconButton
-                                            //onClick={() => handleDelete()}
+                                            onClick={() => handleDelete()}
                                         >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesFacturaProductosShowModalDetails(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -161,10 +229,38 @@ const OrdersFacturaProductosTable = ({datosSeleccionados, datosSecSubdoc, setDat
                     )}
                 />
                 {/* M O D A L E S */}
-                {/*<Dialog open={OrdenesDetallesEstatusShowModal}>*/}
-                {/*</Dialog>*/}
-                {/*<Dialog open={OrdenesUpdateDetallesEstatusShowModal}>*/}
-                {/*</Dialog>*/}
+                <Dialog open={OrdenesFacturaProductosShowModal}>
+                    <OrdenesFacturaProductosModal
+                        OrdenesFacturaProductosShowModal={OrdenesFacturaProductosShowModal}
+                        setOrdenesFacturaProductosShowModal={setOrdenesFacturaProductosShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdoc={datosSecSubdoc}
+                        onClose={() => setOrdenesFacturaProductosShowModal(false)}
+                        fetchData={fetchData}
+                    />
+                </Dialog>
+
+                <Dialog open={OrdenesFacturaProductosShowModalUpdate}>
+                    <OrdenesFacturaProductosModalUpdate
+                        OrdenesFacturaProductosShowModalUpdate={OrdenesFacturaProductosShowModalUpdate}
+                        setOrdenesFacturaProductosShowModalUpdate={setOrdenesFacturaProductosShowModalUpdate}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdoc={datosSecSubdoc}
+                        onClose={() => setOrdenesFacturaProductosShowModal(false)}
+                        fetchData={fetchData}
+                        dataRow={dataRow}
+                    />
+                </Dialog>
+
+
+                <Dialog open={OrdenesFacturaProductosShowModalDetails}>
+                    <OrdenesFacturaProductosModalDetails
+                        OrdenesFacturaProductosShowModalDetails={OrdenesFacturaProductosShowModalDetails}
+                        setOrdenesFacturaProductosShowModalDetails={setOrdenesFacturaProductosShowModalDetails}
+                        onClose={() => setOrdenesFacturaProductosShowModalDetails(false)}
+                        dataRow={dataRow}
+                    />
+                </Dialog>
             </Box>
         </Box>
     );
