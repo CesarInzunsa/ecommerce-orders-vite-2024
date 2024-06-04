@@ -83,14 +83,15 @@ const OrdenesFacturaTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
             const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
 
             // Verificar si fueron seleccionados los id's; de lo contrario, no hacer nada.
-            if (IdInstitutoOK === "0" || IdNegocioOK === "0" || IdOrdenOK === "0") {
+            if (!IdInstitutoOK || !IdNegocioOK || !IdOrdenOK) {
+                setOrdersData([]);
                 setLoadingTable(false);
                 return;
             }
 
             // Obtener los datos
             const ordersData = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
-            setOrdersData(ordersData.factura);
+            setOrdersData(ordersData.factura || []);
 
             // Cambiar el estado del indicador (loading) a false.
             setLoadingTable(false);
@@ -101,7 +102,7 @@ const OrdenesFacturaTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [datosSeleccionados]);
 
     return (
         <Box>
