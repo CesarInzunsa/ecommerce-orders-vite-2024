@@ -76,7 +76,7 @@ const OrdersEnviosRastreosTable = ({datosSeleccionados, datosSecSubdoc, setDatos
             const ordersData = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
 
             const datosFiltrados = getDatosFiltrados(ordersData.envios, datosSecSubdoc);
-            setOrdersData([datosFiltrados]);
+            setOrdersData(datosFiltrados);
 
             // Cambiar el estado del indicador (loading) a false.
             setLoadingTable(false);
