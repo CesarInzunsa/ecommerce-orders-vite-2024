@@ -19,6 +19,7 @@ import {showMensajeConfirm, showMensajeError} from "../../../../share/components
 import {DelOneOrder} from "../../services/remote/del/DelOneOrder.jsx";
 import {UpdatePatchOneOrder} from "../../services/remote/put/UpdatePatchOneOrder.jsx";
 import {OrdenesEstatusValues} from "../../helpers/OrdenesEstatusValues.jsx";
+import OrdenesDetailsEstatusModal from "../modals/detailsModals/OrdenesDetailsEstatusModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -54,6 +55,8 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
     // controllar el estado que muestra u oculta el modal para actualizar el subdocumento.
     const [OrdenesUpdateEstatusShowModal, setOrdenesUpdateEstatusShowModal] = useState(false);
 
+    // controlar el estado que muestra u oculta el modal para ver los detalles del subdocumento.
+    const [OrdenesDetailsEstatusModalShowModal, setOrdenesDetailsEstatusModalShowModal] = useState(false);
     // Controlar la informacion seleccionada
     const [dataRow, setDataRow] = useState();
 
@@ -176,7 +179,9 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={()=>setOrdenesDetailsEstatusModalShowModal(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -201,8 +206,8 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                         onClose={() => {
                             setOrdenesEstatusShowModal(false)
                         }}
+                        fetchData={fetchData}
                     />
-
                 </Dialog>
                 <Dialog open={OrdenesUpdateEstatusShowModal}>
                     <OrdenesUpdateEstatusModal
@@ -212,6 +217,18 @@ const OrdersEstatusTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                         dataRow={dataRow}
                         onClose={() => {
                             setOrdenesEstatusShowModal(false)
+                        }}
+                        fetchData={fetchData}
+                    />
+
+                </Dialog>
+                <Dialog open={OrdenesDetailsEstatusModalShowModal}>
+                    <OrdenesDetailsEstatusModal
+                        OrdenesUpdateEstatusShowModal={OrdenesDetailsEstatusModalShowModal}
+                        setOrdenesUpdateEstatusShowModal={setOrdenesDetailsEstatusModalShowModal}
+                        dataRow={dataRow}
+                        onClose={() => {
+                            setOrdenesDetailsEstatusModalShowModal(false)
                         }}
                     />
 

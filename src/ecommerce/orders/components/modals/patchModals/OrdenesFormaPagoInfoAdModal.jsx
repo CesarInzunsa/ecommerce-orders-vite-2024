@@ -34,7 +34,8 @@ const OrdenesFormaPagoInfoAdModal = ({
                                          OrdenesFormaPagoInfoAdShowModal,
                                          setOrdenesFormaPagoInfoAdShowModal,
                                          datosSeleccionados,
-                                         datosSecSubdocDetalles
+                                         datosSecSubdocDetalles,
+                                         fetchData
                                      }) => {
 
     // Declarar estados para las alertas de éxito y error
@@ -105,6 +106,8 @@ const OrdenesFormaPagoInfoAdModal = ({
 
                 // Declarar estado de exito.
                 setMensajeExitoAlert("Informacion actualizada exitosamente");
+
+                fetchData();
             } catch (e) {
                 setMensajeExitoAlert(null);
                 setMensajeErrorAlert("Ocurrio un error al actualizar la informacion. Intente de nuevo.");

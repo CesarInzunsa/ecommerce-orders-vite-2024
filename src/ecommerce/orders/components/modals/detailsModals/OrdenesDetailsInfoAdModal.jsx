@@ -31,12 +31,10 @@ import MyAutoComplete from "../../../../../share/components/elements/atomos/MyAu
 import Tooltip from "@mui/material/Tooltip";
 import useEtiquetas from "../../../services/remote/useEtiquetas";
 
-const OrdenesUpdateInfoAdModal = ({
-                                      OrdenesUpdateInfoAdShowModal,
-                                      setOrdenesUpdateInfoAdShowModal,
-                                      datosSeleccionados,
+const OrdenesDetailsInfoAdModal = ({
+                                      OrdenesDetailsInfoAdShowModal,
+                                      setOrdenesDetailsInfoAdShowModal,
                                       dataRow,
-                                      fetchData
                                   }) => {
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
@@ -66,49 +64,7 @@ const OrdenesUpdateInfoAdModal = ({
             Valor: Yup.string("").required("Campo requerido"),
             Secuencia: Yup.string().required("Campo requerido"),
         }),
-        onSubmit: async (values) => {
-
-            console.log('entontro al onsubmit', values)
-
-            //FIC: mostramos el Loading.
-            setMensajeExitoAlert("");
-            setMensajeErrorAlert("");
-            setLoading(true);
-
-            //FIC: reiniciamos los estados de las alertas de exito y error.
-            setMensajeErrorAlert(null);
-            setMensajeExitoAlert(null);
-            try {
-
-                // Obtener los id de la orden
-                const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
-
-                // Obtener la orden existente
-                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
-
-                // Actualizar la informacion del subdocumento
-                for (let i = 0; i < ordenExistente.info_ad.length; i++) {
-                    if (ordenExistente.info_ad[i].IdEtiquetaOK === dataRow.IdEtiquetaOK) {
-                        ordenExistente.info_ad[i].IdEtiqueta = values.IdEtiqueta;
-                        ordenExistente.info_ad[i].Valor = values.Valor;
-                        ordenExistente.info_ad[i].IdTipoSeccionOK = values.IdTipoSeccionOK;
-                        ordenExistente.info_ad[i].Secuencia = values.Secuencia;
-                    }
-                }
-
-                // Actualizar la orden
-                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
-
-                setMensajeExitoAlert("Info Adicional creada y guardada Correctamente");
-
-                fetchData();
-            } catch (e) {
-                setMensajeExitoAlert(null);
-                setMensajeErrorAlert("No se pudo Registrar");
-            }
-            //FIC: ocultamos el Loading.
-            setLoading(false);
-        },
+        onSubmit: async (values) => {},
     });
 
     //FIC: props structure for TextField Control.
@@ -145,15 +101,10 @@ const OrdenesUpdateInfoAdModal = ({
         getDataSelectOrdenesType2();
     }, []);
 
-    const {etiquetas, etiquetaEspecifica} = useEtiquetas({
-        IdInstitutoOK: datosSeleccionados.IdInstitutoOK,
-        IdEtiquetaOK: formik.values.IdEtiquetaOK || "",
-    });
-
     return (
         <Dialog
-            open={OrdenesUpdateInfoAdShowModal}
-            onClose={() => setOrdenesUpdateInfoAdShowModal(false)}
+            open={OrdenesDetailsInfoAdShowModal}
+            onClose={() => setOrdenesDetailsInfoAdShowModal(false)}
             fullWidth
         >
             <form onSubmit={(e) => {
@@ -162,7 +113,7 @@ const OrdenesUpdateInfoAdModal = ({
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Actualizar nuevo info de la Orden</strong>
+                        <strong>Detalles - info de la Orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
@@ -187,8 +138,8 @@ const OrdenesUpdateInfoAdModal = ({
                             onChange={formik.handleChange}
                             name="IdTipoSeccionOK" // Asegúrate de que coincida con el nombre del campo
                             onBlur={formik.handleBlur}
-                            disabled={!!mensajeExitoAlert}
                             aria-label="TipoOrden"
+                            disabled={true}
                         >
                             {OrdenesValuesLabel.map((option, index) => (
                                 <MenuItem key={option.IdValorOK} value={`IdSeccionesOrdenes-${option.key}`}>
@@ -207,7 +158,7 @@ const OrdenesUpdateInfoAdModal = ({
                         error={formik.touched.Valor && Boolean(formik.errors.Valor)}
                         helperText={formik.touched.Valor && formik.errors.Valor}
                         {...commonTextFieldProps}
-                        disabled={!!mensajeExitoAlert}
+                        disabled={true}
                     />
                     <TextField
                         type="number"
@@ -217,6 +168,7 @@ const OrdenesUpdateInfoAdModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.Secuencia && Boolean(formik.errors.Secuencia)}
                         helperText={formik.touched.Secuencia && formik.errors.Secuencia}
+                        disabled={true}
                     />
                 </DialogContent>
                 {/* FIC: Aqui van las acciones del usuario como son las alertas o botones */}
@@ -241,24 +193,13 @@ const OrdenesUpdateInfoAdModal = ({
                         loadingPosition="start"
                         startIcon={<CloseIcon/>}
                         variant="outlined"
-                        onClick={() => setOrdenesUpdateInfoAdShowModal(false)}
+                        onClick={() => setOrdenesDetailsInfoAdShowModal(false)}
                     >
                         <span>CERRAR</span>
-                    </LoadingButton>
-                    {/* FIC: Boton de Guardar. */}
-                    <LoadingButton
-                        color="primary"
-                        loadingPosition="start"
-                        startIcon={<SaveIcon/>}
-                        variant="contained"
-                        type="submit"
-                        disabled={formik.isSubmitting || !!mensajeExitoAlert || Loading}
-                    >
-                        <span>GUARDAR</span>
                     </LoadingButton>
                 </DialogActions>
             </form>
         </Dialog>
     );
 };
-export default OrdenesUpdateInfoAdModal;
+export default OrdenesDetailsInfoAdModal;

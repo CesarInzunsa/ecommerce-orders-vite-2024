@@ -30,7 +30,13 @@ import useProducts from "../../../services/remote/useProducts";
 import MyAutoComplete from "../../../../../share/components/elements/atomos/MyAutoComplete";
 import Tooltip from "@mui/material/Tooltip";
 
-const OrdenesUpdateDetallesModal = ({OrdenesUpdateDetallesShowModal, setUpdateOrdenesDetallesShowModal, datosSeleccionados, dataRow}) => {
+const OrdenesUpdateDetallesModal = ({
+                                        OrdenesUpdateDetallesShowModal,
+                                        setUpdateOrdenesDetallesShowModal,
+                                        datosSeleccionados,
+                                        dataRow,
+                                        fetchData
+                                    }) => {
 
     // Declarar estados para las alertas de éxito y error
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
@@ -68,13 +74,13 @@ const OrdenesUpdateDetallesModal = ({OrdenesUpdateDetallesShowModal, setUpdateOr
             IdProdServOK: Yup.string().required("Campo requerido"),
             IdPresentaOK: Yup.string().required("Campo requerido"),
             DesPresentaPS: Yup.string().required("Campo requerido"),
-            Cantidad: Yup.string().required("Campo requerido"),
-            PrecioUniSinIVA: Yup.string().required("Campo requerido"),
-            PrecioUniConIVA: Yup.string().required("Campo requerido"),
-            PorcentajeIVA: Yup.string().required("Campo requerido"),
-            MontoUniIVA: Yup.string().required("Campo requerido"),
-            SubTotalSinIVA: Yup.string().required("Campo requerido"),
-            SubTotalConIVA: Yup.string().required("Campo requerido"),
+            Cantidad: Yup.number().required("Campo requerido").moreThan(0, "Debe ser mayor a 0"),
+            PrecioUniSinIVA: Yup.number().required("Campo requerido").moreThan(0, "Debe ser mayor a 0"),
+            PrecioUniConIVA: Yup.number().required("Campo requerido").moreThan(0, "Debe ser mayor a 0"),
+            PorcentajeIVA: Yup.number().required("Campo requerido").moreThan(0, "Debe ser mayor a 0"),
+            MontoUniIVA: Yup.number().required("Campo requerido").moreThan(0, "Debe ser mayor a 0"),
+            SubTotalSinIVA: Yup.number().required("Campo requerido").moreThan(0, "Debe ser mayor a 0"),
+            SubTotalConIVA: Yup.number().required("Campo requerido").moreThan(0, "Debe ser mayor a 0"),
         }),
         onSubmit: async (values) => {
             //FIC: mostramos el Loading.
@@ -94,7 +100,7 @@ const OrdenesUpdateDetallesModal = ({OrdenesUpdateDetallesShowModal, setUpdateOr
 
                 // Actualizar la informacion del subdocumento
                 for (let i = 0; i < ordenExistente.detalle_ps.length; i++) {
-                    if (ordenExistente.detalle_ps[i].IdProdServOK === dataRow.IdProdServOK) {
+                    if (ordenExistente.detalle_ps[i].IdProdServOK === dataRow.IdProdServOK && ordenExistente.detalle_ps[i].IdPresentaOK === dataRow.IdPresentaOK) {
                         ordenExistente.detalle_ps[i].IdPresentaOK = values.IdPresentaOK;
                         ordenExistente.detalle_ps[i].DesPresentaPS = values.DesPresentaPS;
                         ordenExistente.detalle_ps[i].Cantidad = values.Cantidad;
@@ -112,6 +118,9 @@ const OrdenesUpdateDetallesModal = ({OrdenesUpdateDetallesShowModal, setUpdateOr
 
                 // Declarar estado de exito.
                 setMensajeExitoAlert("Informacion actualizada exitosamente");
+
+                // actualizar
+                fetchData();
             } catch (e) {
                 setMensajeExitoAlert(null);
                 setMensajeErrorAlert("Ocurrio un error al actualizar la informacion. Intente de nuevo.");
@@ -149,40 +158,20 @@ const OrdenesUpdateDetallesModal = ({OrdenesUpdateDetallesShowModal, setUpdateOr
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
                 <DialogContent sx={{display: "flex", flexDirection: "column"}} dividers>
-                    <Stack direction="row" alignItems="center">
-                        <MyAutoComplete
-                            disabled={!!mensajeExitoAlert || isNuevaEtiqueta}
-                            label={"Selecciona un Producto"}
-                            options={etiquetas} //Arreglo de objetos
-                            displayProp="IdProdServOK" // Propiedad a mostrar
-                            idProp="IdProdServOK" // Propiedad a guardar al dar clic
-                            onSelectValue={(selectedValue) => {
-                                console.log("Selección:", selectedValue);
-                                formik.values.DesPresentaPS = selectedValue
-                                    ? selectedValue?.DesProdServ
-                                    : "";
-                                formik.values.IdProdServOK = selectedValue
-                                    ? selectedValue?.IdProdServOK
-                                    : "";
-                                setRefresh(!refresh);
-                            }}
-                        />
-                        <Tooltip title="Agrega manualmente una etiqueta nueva">
-                            <FormControlLabel
-                                sx={{ml: 2}}
-                                control={<Switch defaultChecked/>}
-                                label={
-                                    isNuevaEtiqueta
-                                        ? "Agregar Nueva Etiqueta"
-                                        : "Seleccionar una Etiqueta"
-                                }
-                                onChange={() => {
-                                    setINuevaEtiqueta(!isNuevaEtiqueta);
-                                    formik.values.IdEtiqueta = "";
-                                }}
-                            />
-                        </Tooltip>
-                    </Stack>
+                    <TextField
+                        id="IdProdServOK"
+                        label="IdProdServOK*"
+                        value={formik.values.IdProdServOK}
+                        {...commonTextFieldProps}
+                        error={
+                            formik.touched.IdProdServOK &&
+                            Boolean(formik.errors.IdProdServOK)
+                        }
+                        helperText={
+                            formik.touched.IdProdServOK && formik.errors.IdProdServOK
+                        }
+                        disabled={true}
+                    />
                     <TextField
                         id="DesPresentaPS"
                         label="DesPresentaPS*"
@@ -200,12 +189,12 @@ const OrdenesUpdateDetallesModal = ({OrdenesUpdateDetallesShowModal, setUpdateOr
                     <FormControl fullWidth margin="normal">
                         <InputLabel>Selecciona una presentacion</InputLabel>
                         <Select
+                            disabled={true}
                             value={formik.values.IdPresentaOK}
                             label="Selecciona una Pecentacion"
                             onChange={formik.handleChange}
                             name="IdPresentaOK" // Asegúrate de que coincida con el nombre del campo
                             onBlur={formik.handleBlur}
-                            disabled={!!mensajeExitoAlert}
                         >
                             {etiquetaEspecifica?.cat_prod_serv_presenta.map((seccion) => {
                                 return (

@@ -32,7 +32,8 @@ const OrdenesUpdateEstatusModal = ({
                                        OrdenesUpdateEstatusShowModal,
                                        setOrdenesUpdateEstatusShowModal,
                                        datosSeleccionados,
-                                       dataRow
+                                       dataRow,
+                                       fetchData
                                    }) => {
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
@@ -74,9 +75,18 @@ const OrdenesUpdateEstatusModal = ({
                     }
                 }
 
+                if(values.Actual === true){
+                    for (let i = 0; i < ordenExistente.estatus.length; i++) {
+                        if (ordenExistente.estatus[i].IdTipoEstatusOK !== dataRow.IdTipoEstatusOK) {
+                            ordenExistente.estatus[i].Actual = "N";
+                        }
+                    }
+                }
+
                 await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
                 setMensajeExitoAlert("Envío actualizado Correctamente");
-                //handleReload(); //usar la función para volver a cargar los datos de la tabla y que se vea la actualizada
+                //usar la función para volver a cargar los datos de la tabla y que se vea la actualizada
+                fetchData();
             } catch (e) {
                 setMensajeExitoAlert(null);
                 setMensajeErrorAlert("No se pudo Registrar");
@@ -139,21 +149,15 @@ const OrdenesUpdateEstatusModal = ({
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
                 <DialogContent sx={{display: 'flex', flexDirection: 'column'}} dividers>
                     {/* FIC: Campos de captura o selección */}
-                    <InputLabel htmlFor="dynamic-select-tipo-orden">{`Tipo de Orden${dataRow.IdTipoEstatusOK}`}</InputLabel>
-                    <Select
-                        id="dynamic-select-tipo-orden"
+                    <TextField
+                        id="IdTipoEstatusOK"
+                        label="IdTipoEstatusOK*"
                         value={formik.values.IdTipoEstatusOK}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        name="IdTipoEstatusOK"
-                        aria-label="TipoOrden"
-                    >
-                        {OrdenesValuesLabel.map((option, index) => (
-                            <MenuItem key={option.IdValorOK} value={`IdEstatusOrden-${option.key}`}>
-                                {option.IdValorOK}
-                            </MenuItem>
-                        ))}
-                    </Select>
+                        {...commonTextFieldProps}
+                        error={formik.touched.IdTipoEstatusOK && Boolean(formik.errors.IdTipoEstatusOK)}
+                        helperText={formik.touched.IdTipoEstatusOK && formik.errors.IdTipoEstatusOK}
+                        disabled={true}
+                    />
                     <FormControlLabel
                         control={
                             <Checkbox
@@ -163,7 +167,6 @@ const OrdenesUpdateEstatusModal = ({
                                     formik.setFieldValue('Actual', event.target.checked);
                                 }}
                                 {...commonTextFieldProps}
-                                disabled={!!mensajeExitoAlert}
                             />
                         }
                         label="Actual*"

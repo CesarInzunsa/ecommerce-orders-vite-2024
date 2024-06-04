@@ -16,17 +16,18 @@ import {DelOneOrder} from '../../services/remote/del/DelOneOrder.jsx';
 // Modals
 import AddOrdenesModal from "../modals/addModals/AddOrdenesModal.jsx";
 import OrdenesModal from "../modals/patchModals/OrdenesModal.jsx";
+import OrdenesDetailsModal   from "../modals/detailsModals/OrdenesDetailsModal.jsx";
 
 // Columns Table Definition.
 const columns = [
     {
         accessorKey: "IdInstitutoOK",
-        header: "ID OK",
+        header: "Id Instituto OK",
         size: 30, //small column
     },
     {
         accessorKey: "IdNegocioOK",
-        header: "ID BK",
+        header: "Id Negocio OK",
         size: 30, //small column
     },
     {
@@ -73,6 +74,9 @@ const OrdersTable = ({setDatosSeleccionados, datosSeleccionados}) => {
 
     // Controlar el estado que muestra u oculta la modal de nueva orden
     const [AddOrdenShowModal, setAddOrdenShowModal] = useState(false);
+
+    // Controlador para mostra modal detalles
+    const [OrdenesDetailsShowModal, setOrdenesDetailsShowModal] = useState(false);
 
     // Actualizar un subdocumento
     const [PatchOrdenesShowModal, setPatchOrdenesShowModal] = useState(false);
@@ -177,7 +181,9 @@ const OrdersTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={()=> setOrdenesDetailsShowModal(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -198,7 +204,10 @@ const OrdersTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                     <AddOrdenesModal
                         AddOrdenShowModal={AddOrdenShowModal}
                         setAddOrdenShowModal={setAddOrdenShowModal}
-                        onClose={() => setAddOrdenShowModal(false)}
+                        onClose={() => {
+                            setAddOrdenShowModal(false);
+                        }}
+                        fetchData={fetchData}
                     />
                 </Dialog>
                 <Dialog open={PatchOrdenesShowModal}>
@@ -207,10 +216,20 @@ const OrdersTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                         setPatchOrdenesShowModal={setPatchOrdenesShowModal}
                         dataRow={dataRow}
                         onClose={() => {
-                            setPatchOrdenesShowModal(false)
+                            setPatchOrdenesShowModal(false);
+                        }}
+                        fetchData={fetchData}
+                    />
+                </Dialog>
+                <Dialog open={OrdenesDetailsShowModal}>
+                    <OrdenesDetailsModal
+                        OrdenesDetailsShowModal={OrdenesDetailsShowModal}
+                        setOrdenesDetailsShowModal={setOrdenesDetailsShowModal}
+                        dataRow={dataRow}
+                        onClose={() => {
+                            setOrdenesDetailsShowModal(false);
                         }}
                     />
-
                 </Dialog>
             </Box>
         </Box>

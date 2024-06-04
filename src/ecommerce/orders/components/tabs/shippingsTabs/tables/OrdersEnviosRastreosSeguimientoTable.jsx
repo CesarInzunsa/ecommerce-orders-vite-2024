@@ -38,23 +38,28 @@ const columns = [
     },
 ];
 
-function getDatosFiltrados(OneProductData, datosSecSubdocumentoPresenta, datosSecSubdocProductos) {
+function getDatosFiltrados(OneProductData, datosSecSubdoc, datosSecSubdocRastreos) {
+
+    console.log("OneProductData: ", OneProductData);
+    console.log("datosSecSubdoc: ", datosSecSubdoc);
+    console.log("datosSecSubdocRastreos: ", datosSecSubdocRastreos);
+
     const resultadoFiltrado = OneProductData.filter(elemento => (
-        elemento.IdDomicilioOK === datosSecSubdocumentoPresenta.IdDomicilioOK && elemento.IdPaqueteriaOK === datosSecSubdocumentoPresenta.IdPaqueteriaOK
+        elemento.IdDomicilioOK === datosSecSubdoc.IdDomicilioOK && elemento.IdPaqueteriaOK === datosSecSubdoc.IdPaqueteriaOK
     ));
 
     // Obtener los productos filtrados
-    const resultadoFiltradoProductos = resultadoFiltrado.length > 0
+    const resultadoFiltradoEnvios = resultadoFiltrado.length > 0
         ? resultadoFiltrado[0].rastreos
         : null;
 
     // Ahora filtrar los productos para encontrar el subdocumento de descuentos
-    const resultadoFiltradoDescuentos = resultadoFiltradoProductos.filter(elemento => (
-        elemento.NumeroGuia === datosSecSubdocProductos.NumeroGuia && elemento.IdRepartidorOK === datosSecSubdocProductos.IdRepartidorOK
+    const resultadoFiltradoSeguimiento = resultadoFiltradoEnvios.filter(elemento => (
+        elemento.NumeroGuia === datosSecSubdocRastreos.NumeroGuia && elemento.IdRepartidorOK === datosSecSubdocRastreos.IdRepartidorOK
     ));
 
     // Obtener el primer elemento filtrado (si existe)
-    return resultadoFiltradoDescuentos.length > 0 ? resultadoFiltradoDescuentos[0].seguimiento : null;
+    return resultadoFiltradoSeguimiento.length > 0 ? resultadoFiltradoSeguimiento[0].seguimiento : null;
 }
 
 // Table - FrontEnd.

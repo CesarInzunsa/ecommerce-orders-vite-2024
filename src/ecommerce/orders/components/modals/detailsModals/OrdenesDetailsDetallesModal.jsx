@@ -29,14 +29,12 @@ import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
 import useProducts from "../../../services/remote/useProducts";
 import MyAutoComplete from "../../../../../share/components/elements/atomos/MyAutoComplete";
 import Tooltip from "@mui/material/Tooltip";
-import {GetAllProdServ} from "../../../services/remote/get/GetAllProdServ.jsx";
 
-const OrdenesDetallesModal = ({
-                                  OrdenesDetallesShowModal,
-                                  setOrdenesDetallesShowModal,
-                                  datosSeleccionados,
-                                  fetchData
-                              }) => {
+const OrdenesDetailsDetallesModal = ({
+                                        DetailsOrdenesDetallesShowModal,
+                                        setDetailsOrdenesDetallesShowModal,
+                                        dataRow,
+                                    }) => {
 
     // Declarar estados para las alertas de éxito y error
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
@@ -59,16 +57,16 @@ const OrdenesDetallesModal = ({
     //FIC: Definition Formik y Yup.
     const formik = useFormik({
         initialValues: {
-            IdProdServOK: "",
-            IdPresentaOK: "",
-            DesPresentaPS: "",
-            Cantidad: "1",
-            PrecioUniSinIVA: "",
-            PrecioUniConIVA: "",
-            PorcentajeIVA: "16",
-            MontoUniIVA: "",
-            SubTotalSinIVA: "",
-            SubTotalConIVA: "",
+            IdProdServOK: dataRow.IdProdServOK,
+            IdPresentaOK: dataRow.IdPresentaOK,
+            DesPresentaPS: dataRow.DesPresentaPS,
+            Cantidad: dataRow.Cantidad,
+            PrecioUniSinIVA: dataRow.PrecioUniSinIVA,
+            PrecioUniConIVA: dataRow.PrecioUniConIVA,
+            PorcentajeIVA: dataRow.PorcentajeIVA,
+            MontoUniIVA: dataRow.MontoUniIVA,
+            SubTotalSinIVA: dataRow.SubTotalSinIVA,
+            SubTotalConIVA: dataRow.SubTotalConIVA,
         },
         validationSchema: Yup.object({
             IdProdServOK: Yup.string().required("Campo requerido"),
@@ -82,58 +80,7 @@ const OrdenesDetallesModal = ({
             SubTotalSinIVA: Yup.string().required("Campo requerido"),
             SubTotalConIVA: Yup.string().required("Campo requerido"),
         }),
-        onSubmit: async (values) => {
-            //FIC: mostramos el Loading.
-            setMensajeExitoAlert("");
-            setMensajeErrorAlert("");
-            setLoading(true);
-
-            //FIC: reiniciamos los estados de las alertas de exito y error.
-            setMensajeErrorAlert(null);
-            setMensajeExitoAlert(null);
-            try {
-                // Desestructurar datos del documento seleccionado
-                const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
-
-                // Obtener la orden existente
-                const ordenDetalleExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
-
-                // Validar que el producto no exista en la orden
-                const productoExistente = ordenDetalleExistente.detalle_ps.find((producto) => producto.IdProdServOK === values.IdProdServOK && producto.IdPresentaOK === values.IdPresentaOK);
-                if (productoExistente) {
-                    setMensajeExitoAlert(null);
-                    setMensajeErrorAlert("El producto con la misma presentacion ya existe en la orden");
-                    setLoading(false);
-                    return;
-                }
-
-                // Buscar el DesPresenta que corresponda con el IdPresentaOK y concatenarlo al final de DesPresentaPS
-                const productos = await GetAllProdServ();
-                // buscar el producto que corresponda con el IdProdServOK
-                const producto = productos.find((producto) => producto.IdProdServOK === values.IdProdServOK);
-                // Buscar la cat_prod_serv_presenta que corresponda con el IdPresentaOK
-                const desPresenta = producto.cat_prod_serv_presenta.find((presentacion) => presentacion.IdPresentaOK === values.IdPresentaOK);
-                // concatenar el DesPresenta al final de DesPresentaPS
-                values.DesPresentaPS = `${values.DesPresentaPS} - ${desPresenta.DesPresenta}`;
-
-                // Obtener los valores de la ventana modal
-                const DetalleOrdenes = OrdenesDetallesValues(values, ordenDetalleExistente);
-
-                // actualizar la orden
-                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, DetalleOrdenes);
-
-                // Declarar estado de exito.
-                setMensajeExitoAlert("Informacion actualizada exitosamente");
-
-                // actualizar
-                fetchData();
-            } catch (e) {
-                setMensajeExitoAlert(null);
-                setMensajeErrorAlert("Ocurrio un error al actualizar la informacion. Intente de nuevo.");
-            }
-            //FIC: ocultamos el Loading.
-            setLoading(false);
-        },
+        onSubmit: async (values) => {},
     });
 
     //FIC: props structure for TextField Control.
@@ -149,8 +96,8 @@ const OrdenesDetallesModal = ({
 
     return (
         <Dialog
-            open={OrdenesDetallesShowModal}
-            onClose={() => setOrdenesDetallesShowModal(false)}
+            open={DetailsOrdenesDetallesShowModal}
+            onClose={() => setDetailsOrdenesDetallesShowModal(false)}
             fullWidth
         >
             <form onSubmit={(e) => {
@@ -159,27 +106,24 @@ const OrdenesDetallesModal = ({
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo Detalle a la orden</strong>
+                        <strong>Detalles - detalle de la orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
                 <DialogContent sx={{display: "flex", flexDirection: "column"}} dividers>
-                    <MyAutoComplete
-                        disabled={!!mensajeExitoAlert || isNuevaEtiqueta}
-                        label={"Selecciona un Producto"}
-                        options={etiquetas} //Arreglo de objetos
-                        displayProp="IdProdServOK" // Propiedad a mostrar
-                        idProp="IdProdServOK" // Propiedad a guardar al dar clic
-                        onSelectValue={(selectedValue) => {
-                            console.log("Selección:", selectedValue);
-                            formik.values.DesPresentaPS = selectedValue
-                                ? selectedValue?.DesProdServ
-                                : "";
-                            formik.values.IdProdServOK = selectedValue
-                                ? selectedValue?.IdProdServOK
-                                : "";
-                            setRefresh(!refresh);
-                        }}
+                    <TextField
+                        id="IdProdServOK"
+                        label="IdProdServOK*"
+                        value={formik.values.IdProdServOK}
+                        {...commonTextFieldProps}
+                        error={
+                            formik.touched.IdProdServOK &&
+                            Boolean(formik.errors.IdProdServOK)
+                        }
+                        helperText={
+                            formik.touched.IdProdServOK && formik.errors.IdProdServOK
+                        }
+                        disabled={true}
                     />
                     <TextField
                         id="DesPresentaPS"
@@ -198,12 +142,12 @@ const OrdenesDetallesModal = ({
                     <FormControl fullWidth margin="normal">
                         <InputLabel>Selecciona una presentacion</InputLabel>
                         <Select
+                            disabled={true}
                             value={formik.values.IdPresentaOK}
                             label="Selecciona una Pecentacion"
                             onChange={formik.handleChange}
                             name="IdPresentaOK" // Asegúrate de que coincida con el nombre del campo
                             onBlur={formik.handleBlur}
-                            disabled={!!mensajeExitoAlert}
                         >
                             {etiquetaEspecifica?.cat_prod_serv_presenta.map((seccion) => {
                                 return (
@@ -223,6 +167,7 @@ const OrdenesDetallesModal = ({
                     <TextField
                         id="Cantidad"
                         label="Cantidad*"
+                        disabled={true}
                         value={formik.values.Cantidad}
                         onChange={(e) => {
                             const cantidad = e.target.value;
@@ -252,6 +197,7 @@ const OrdenesDetallesModal = ({
                     <div style={{margin: '10px 0'}}></div>
                     <TextField
                         id="PrecioUniSinIVA"
+                        disabled={true}
                         label="PrecioUniSinIVA*"
                         value={formik.values.PrecioUniSinIVA}
                         onChange={(e) => {
@@ -321,6 +267,7 @@ const OrdenesDetallesModal = ({
                         helperText={
                             formik.touched.MontoUniIVA && formik.errors.MontoUniIVA
                         }
+                        disabled={true}
                     />
                     <TextField
                         id="SubTotalSinIVA"
@@ -334,6 +281,7 @@ const OrdenesDetallesModal = ({
                         helperText={
                             formik.touched.SubTotalSinIVA && formik.errors.SubTotalSinIVA
                         }
+                        disabled={true}
                     />
                     <TextField
                         id="SubTotalConIVA"
@@ -373,24 +321,13 @@ const OrdenesDetallesModal = ({
                         loadingPosition="start"
                         startIcon={<CloseIcon/>}
                         variant="outlined"
-                        onClick={() => setOrdenesDetallesShowModal(false)}
+                        onClick={() => setDetailsOrdenesDetallesShowModal(false)}
                     >
                         <span>CERRAR</span>
-                    </LoadingButton>
-                    {/* FIC: Boton de Guardar. */}
-                    <LoadingButton
-                        color="primary"
-                        loadingPosition="start"
-                        startIcon={<SaveIcon/>}
-                        variant="contained"
-                        type="submit"
-                        disabled={formik.isSubmitting || !!mensajeExitoAlert || Loading}
-                    >
-                        <span>GUARDAR</span>
                     </LoadingButton>
                 </DialogActions>
             </form>
         </Dialog>
     );
 };
-export default OrdenesDetallesModal;
+export default OrdenesDetailsDetallesModal;

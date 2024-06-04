@@ -17,17 +17,13 @@ import OrdenesDetallesInfoAdModal from "../modals/patchModals/OrdenesDetallesInf
 import OrdenesUpdateDetallesInfoAdModal from "../modals/updateModals/OrdenesUpdateDetallesInfoAdModal.jsx";
 import {UpdatePatchOneOrder} from "../../services/remote/put/UpdatePatchOneOrder.jsx";
 import {showMensajeConfirm, showMensajeError} from "../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import OrdenesDetailsDetallesInfoAdModal from "../modals/detailsModals/OrdenesDetailsDetallesInfoAdModal.jsx";
 
 // Columns Table Definition.
 const columns = [
     {
         accessorKey: "IdEtiquetaOK",
         header: "Id Tipo Etiqueta OK",
-        size: 30, //small column
-    },
-    {
-        accessorKey: "IdEtiqueta",
-        header: "Id Etiqueta",
         size: 30, //small column
     },
     {
@@ -78,6 +74,9 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
 
     // controlar el estado del modal para actualizar
     const [OrdenesDetallesInfoAdShowModalUpdate, setOrdenesDetallesInfoAdShowModalUpdate] = useState(false);
+
+    // controlar el estado del modal para ver detalles
+    const [OrdenesDetallesInfoAdShowModalDetails, setOrdenesDetallesInfoAdShowModalDetails] = useState(false);
 
     // Controlar la informacion seleccionada
     const [dataRow, setDataRow] = useState();
@@ -210,7 +209,9 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesDetallesInfoAdShowModalDetails(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -234,6 +235,7 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
                         datosSeleccionados={datosSeleccionados}
                         datosSecSubdocDetalles={datosSecSubdocDetalles}
                         onClose={() => setOrdenesDetallesInfoAdShowModal(false)}
+                        fetchData={fetchData}
                     />
                 </Dialog>
                 <Dialog open={OrdenesDetallesInfoAdShowModalUpdate}>
@@ -244,9 +246,17 @@ const OrdersDetallesInfoAdTable = ({datosSecSubdocDetalles, datosSeleccionados})
                         datosSecSubdocDetalles={datosSecSubdocDetalles}
                         dataRow={dataRow}
                         onClose={() => setOrdenesDetallesInfoAdShowModalUpdate(false)}
+                        fetchData={fetchData}
                     />
                 </Dialog>
-
+                <Dialog open={OrdenesDetallesInfoAdShowModalDetails}>
+                    <OrdenesDetailsDetallesInfoAdModal
+                        OrdenesDetallesInfoAdShowModalDetails={OrdenesDetallesInfoAdShowModalDetails}
+                        setOrdenesDetallesInfoAdShowModalDetails={setOrdenesDetallesInfoAdShowModalDetails}
+                        dataRow={dataRow}
+                        onClose={() => setOrdenesDetallesInfoAdShowModalDetails(false)}
+                    />
+                </Dialog>
             </Box>
         </Box>
     );

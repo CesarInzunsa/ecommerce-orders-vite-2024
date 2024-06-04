@@ -17,6 +17,7 @@ import OrdenesDetallesPaqueteUpdateModal from "../modals/updateModals/OrdenesDet
 import OrdenesDetallesPaqueteModal from "../modals/patchModals/OrdenesDetallesPaqueteModal.jsx";
 import {showMensajeConfirm, showMensajeError} from "../../../../share/components/elements/messages/MySwalAlerts.jsx";
 import {UpdatePatchOneOrder} from "../../services/remote/put/UpdatePatchOneOrder.jsx";
+import OrdenesDetallesPaqueteDetailsModal from "../modals/detailsModals/OrdenesDetallesPaqueteDetailsModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -70,6 +71,9 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
 
     // controlar el estado que muestra u oculta el modal para actualizar el subdocumento.
     const [OrdenesDetallesPaqueteUpdateShowModal, setOrdenesDetallesPaqueteUpdateShowModal] = useState(false);
+
+    // controlar el estado que muestra u oculta el modal para ver los detalles del subdocumento.
+    const [OrdenesDetallesPaqueteDetailsShowModal, setOrdenesDetallesPaqueteDetailsShowModal] = useState(false);
 
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
@@ -199,7 +203,9 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesDetallesPaqueteDetailsShowModal(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -223,6 +229,7 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
                         datosSeleccionados={datosSeleccionados}
                         datosSecSubdocDetalles={datosSecSubdocDetalles}
                         onClose={() => setOrdenesDetallesPaqueteShowModal(false)}
+                        fetchData={fetchData}
                     />
                 </Dialog>
                 <Dialog open={OrdenesDetallesPaqueteUpdateShowModal}>
@@ -233,6 +240,16 @@ const OrdersDetallesPaqueteTable = ({datosSecSubdocDetalles, datosSeleccionados}
                         datosSecSubdocDetalles={datosSecSubdocDetalles}
                         dataRow={dataRow}
                         onClose={() => setOrdenesDetallesPaqueteUpdateShowModal(false)}
+                        fetchData={fetchData}
+                    />
+                </Dialog>
+
+                <Dialog open={OrdenesDetallesPaqueteDetailsShowModal}>
+                    <OrdenesDetallesPaqueteDetailsModal
+                        OrdenesDetallesPaqueteDetailsShowModal={OrdenesDetallesPaqueteDetailsShowModal}
+                        setOrdenesDetallesPaqueteDetailsShowModal={setOrdenesDetallesPaqueteDetailsShowModal}
+                        dataRow={dataRow}
+                        onClose={() => setOrdenesDetallesPaqueteDetailsShowModal(false)}
                     />
                 </Dialog>
             </Box>

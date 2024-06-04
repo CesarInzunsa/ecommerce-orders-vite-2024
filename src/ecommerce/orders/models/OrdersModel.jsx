@@ -14,6 +14,10 @@ export function OrdersModel() {
         info_ad: [],
         detalle_ps: [],
         forma_pago: [],
+        factura: [],
+        cliente: {},
+        vendedor: {},
+        envios: [],
         detail_row: getDetailRow(),
     }
 }

@@ -4,7 +4,6 @@ import {getDetailRow} from "../helpers/Utils.jsx";
 export function OrdenesDetallesInfoAdModel() {
     return {
         IdEtiquetaOK: {type: String, require: true},
-        IdEtiqueta: {type: String, require: true},
         Etiqueta: {type: String, require: true},
         Valor: {type: String, require: true},
         IdTipoSeccionOK: {type: String, require: true},

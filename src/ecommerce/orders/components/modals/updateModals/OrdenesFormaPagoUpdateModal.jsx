@@ -31,7 +31,8 @@ const OrdenesFormaPagoUpdateModal = ({
                                          OrdenesFormaPagoUpdateShowModal,
                                          setOrdenesFormaPagoUpdateShowModal,
                                          datosSeleccionados,
-                                         dataRow
+                                         dataRow,
+                                         fetchData
                                      }) => {
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
@@ -79,6 +80,7 @@ const OrdenesFormaPagoUpdateModal = ({
                 await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
                 setMensajeExitoAlert("Envío actualizado Correctamente");
                 //handleReload(); //usar la función para volver a cargar los datos de la tabla y que se vea la actualizada
+                fetchData();
             } catch (e) {
                 setMensajeExitoAlert(null);
                 setMensajeErrorAlert("No se pudo Registrar");
@@ -122,6 +124,7 @@ const OrdenesFormaPagoUpdateModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.IdTipoPagoOK && Boolean(formik.errors.IdTipoPagoOK)}
                         helperText={formik.touched.IdTipoPagoOK && formik.errors.IdTipoPagoOK}
+                        disabled={true}
                     />
                     <TextField
                         id="MontoPagado"

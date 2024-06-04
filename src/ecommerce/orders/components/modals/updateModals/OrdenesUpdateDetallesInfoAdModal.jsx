@@ -36,7 +36,8 @@ const OrdenesUpdateDetallesInfoAdModal = ({
                                               setOrdenesDetallesInfoAdShowModalUpdate,
                                               datosSeleccionados,
                                               datosSecSubdocDetalles,
-                                              dataRow
+                                              dataRow,
+                                              fetchData
                                           }) => {
 
     // Declarar estados para las alertas de éxito y error
@@ -54,18 +55,18 @@ const OrdenesUpdateDetallesInfoAdModal = ({
             IdEtiqueta: dataRow.IdEtiqueta || "",
             Etiqueta: dataRow.Etiqueta || "",
             Valor: dataRow.Valor || "",
-            IdTipoSeccionOK: dataRow.IdTipoSeccionOK || "",
+            IdTipoSeccionOK:  "",
             Seccion: dataRow.Seccion || "",
             Secuencia: dataRow.Secuencia || "",
         },
         validationSchema: Yup.object({
-            IdEtiquetaOK: Yup.string().required("El campo es requerido"),
-            IdEtiqueta: Yup.string().required("El campo es requerido"),
-            Etiqueta: Yup.string().required("El campo es requerido"),
-            Valor: Yup.string().required("El campo es requerido"),
-            IdTipoSeccionOK: Yup.string().required("El campo es requerido"),
-            Seccion: Yup.string().required("El campo es requerido"),
-            Secuencia: Yup.number().required("El campo es requerido"),
+            IdEtiquetaOK: Yup.string(),
+            IdEtiqueta: Yup.string(),
+            Etiqueta: Yup.string(),
+            Valor: Yup.string(),
+            IdTipoSeccionOK: Yup.string(),
+            Seccion: Yup.string(),
+            Secuencia: Yup.number(),
         }),
         onSubmit: async (values) => {
             //FIC: mostramos el Loading.
@@ -77,11 +78,23 @@ const OrdenesUpdateDetallesInfoAdModal = ({
             setMensajeErrorAlert(null);
             setMensajeExitoAlert(null);
             try {
+                console.log('formik.values.IdEtiquetaOK', formik.values.IdEtiquetaOK);
+                console.log('formik.values.IdEtiqueta', formik.values.IdEtiqueta);
+                console.log('formik.values.Etiqueta', formik.values.Etiqueta);
+                console.log('formik.values.Valor', formik.values.Valor);
+                console.log('formik.values.IdTipoSeccionOK', formik.values.IdTipoSeccionOK);
+                console.log('formik.values.Seccion', formik.values.Seccion);
+                console.log('formik.values.Secuencia', formik.values.Secuencia);
+
+
+
                 // Desestructurar datos del documento seleccionado
                 const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
 
                 // Obtener la orden existente
                 const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                values.IdTipoSeccionOK = 'IdSeccionesOrdenes';
 
                 //Actualizar la informacion del subdocumento
                 for (let i = 0; i < ordenExistente.detalle_ps.length; i++) {
@@ -123,6 +136,52 @@ const OrdenesUpdateDetallesInfoAdModal = ({
         disabled: !!mensajeExitoAlert,
     };
 
+    useEffect(() => {
+        getLabels();
+        getSecciones();
+    }, []);
+
+    const [labels, setLabels] = useState([]);
+    const [labelsvalores, setLabelsvalores] = useState([]);
+
+    // Funcion para obtener todas las etiquetas
+    async function getLabels() {
+        try {
+            // Obtener todas las etiquetas
+            let labels = await GetAllLabels();
+            // Comprueba si labels es un array y si tiene datos
+            if (Array.isArray(labels) && labels.length > 0) {
+                // guardar la informacion en el useState
+                setLabels(labels);
+            }
+        } catch (e) {
+            console.log('ERROR: getLabels', e);
+        }
+    }
+
+    const [OrdenesValuesLabel, setOrdenesValuesLabel] = useState([]);
+
+    async function getSecciones() {
+        try {
+            const Labels = await GetAllLabels();
+            const OrdenesTypes = Labels.find(
+                (label) => label.IdEtiquetaOK === "IdSeccionesOrdenes"
+            );
+            const valores = OrdenesTypes.valores; // Obtenemos el array de valores
+            const IdValoresOK = valores.map((valor, index) => ({
+                IdValorOK: valor.Valor,
+                key: valor.IdValorOK, // Asignar el índice como clave temporal
+            }));
+            setOrdenesValuesLabel(IdValoresOK);
+            //console.log(OrdenesValuesLabel)
+        } catch (e) {
+            console.error(
+                "Error al obtener Etiquetas para Tipos Giros de Institutos:",
+                e
+            );
+        }
+    }
+
     return (
         <Dialog
             open={OrdenesDetallesInfoAdShowModalUpdate}
@@ -147,22 +206,7 @@ const OrdenesUpdateDetallesInfoAdModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.IdEtiquetaOK && Boolean(formik.errors.IdEtiquetaOK)}
                         helperText={formik.touched.IdEtiquetaOK && formik.errors.IdEtiquetaOK}
-                    />
-                    <TextField
-                        id="IdEtiqueta"
-                        label="IdEtiqueta*"
-                        value={formik.values.IdEtiqueta}
-                        {...commonTextFieldProps}
-                        error={formik.touched.IdEtiqueta && Boolean(formik.errors.IdEtiqueta)}
-                        helperText={formik.touched.IdEtiqueta && formik.errors.IdEtiqueta}
-                    />
-                    <TextField
-                        id="Etiqueta"
-                        label="Etiqueta*"
-                        value={formik.values.Etiqueta}
-                        {...commonTextFieldProps}
-                        error={formik.touched.Etiqueta && Boolean(formik.errors.Etiqueta)}
-                        helperText={formik.touched.Etiqueta && formik.errors.Etiqueta}
+                        disabled={true}
                     />
                     <TextField
                         id="Valor"
@@ -171,23 +215,29 @@ const OrdenesUpdateDetallesInfoAdModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.Valor && Boolean(formik.errors.Valor)}
                         helperText={formik.touched.Valor && formik.errors.Valor}
+                        disabled={true}
                     />
-                    <TextField
-                        id="IdTipoSeccionOK"
-                        label="IdTipoSeccionOK*"
-                        value={formik.values.IdTipoSeccionOK}
-                        {...commonTextFieldProps}
-                        error={formik.touched.IdTipoSeccionOK && Boolean(formik.errors.IdTipoSeccionOK)}
-                        helperText={formik.touched.IdTipoSeccionOK && formik.errors.IdTipoSeccionOK}
-                    />
-                    <TextField
-                        id="Seccion"
-                        label="Seccion*"
-                        value={formik.values.Seccion}
-                        {...commonTextFieldProps}
-                        error={formik.touched.Seccion && Boolean(formik.errors.Seccion)}
-                        helperText={formik.touched.Seccion && formik.errors.Seccion}
-                    />
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel>Selecciona una Seccion</InputLabel>
+                        <Select
+                            value={formik.values.Seccion}
+                            label="Selecciona una opción"
+                            onChange={(event) => {
+                                formik.handleChange(event);
+                                formik.setFieldValue('Seccion', event.target.value);
+                            }}
+                            name="IdTipoSeccionOK" // Asegúrate de que coincida con el nombre del campo
+                            onBlur={formik.handleBlur}
+                            disabled={!!mensajeExitoAlert}
+                            aria-label="IdTipoSeccionOK"
+                        >
+                            <MenuItem value="seccion01">seccion01</MenuItem>
+                            <MenuItem value="seccion02">seccion02</MenuItem>
+                        </Select>
+                        <FormHelperText>
+                            {formik.touched.Seccion && formik.errors.Seccion}
+                        </FormHelperText>
+                    </FormControl>
                     <TextField
                         id="Secuencia"
                         label="Secuencia*"

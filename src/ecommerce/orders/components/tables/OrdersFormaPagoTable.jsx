@@ -17,6 +17,7 @@ import OrdenesFormaPagoModal from "../modals/patchModals/OrdenesFormaPagoModal.j
 import OrdenesFormaPagoUpdateModal from "../modals/updateModals/OrdenesFormaPagoUpdateModal.jsx";
 import {UpdatePatchOneOrder} from "../../services/remote/put/UpdatePatchOneOrder.jsx";
 import {showMensajeConfirm, showMensajeError} from "../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import OrdenesFormaPagoDetailsModal from "../modals/detailsModals/OrdenesFormaPagoDetailsModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -59,6 +60,9 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
 
     // Controlar la informacion seleccionada
     const [dataRow, setDataRow] = useState();
+
+    // Controlar el estado que muestra u oculta la modal para ver los detalles de un producto
+    const [OrdenesFormaPagoDetailsShowModal, setOrdenesFormaPagoDetailsShowModal] = useState(false);
 
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
@@ -182,8 +186,10 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
-                                    <Tooltip title="Detalles ">
-                                        <IconButton>
+                                    <Tooltip title="Detalles">
+                                        <IconButton
+                                            onClick={() => setOrdenesFormaPagoDetailsShowModal(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -208,6 +214,7 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
                         onClose={() => {
                             setOrdenesFormaPagoShowModal(false)
                         }}
+                        fetchData={fetchData}
                     />
                 </Dialog>
                 <Dialog open={OrdenesFormaPagoUpdateShowModal}>
@@ -218,6 +225,18 @@ const OrdersFormaPagoTable = ({setDatosSecSubdocProveedores, datosSeleccionados}
                         dataRow={dataRow}
                         onClose={() => {
                             setOrdenesFormaPagoUpdateShowModal(false)
+                        }}
+                        fetchData={fetchData}
+                    />
+                </Dialog>
+
+                <Dialog open={OrdenesFormaPagoDetailsShowModal}>
+                    <OrdenesFormaPagoDetailsModal
+                        OrdenesFormaPagoDetailsShowModal={OrdenesFormaPagoDetailsShowModal}
+                        setOrdenesFormaPagoDetailsShowModal={setOrdenesFormaPagoDetailsShowModal}
+                        dataRow={dataRow}
+                        onClose={() => {
+                            setOrdenesFormaPagoDetailsShowModal(false)
                         }}
                     />
                 </Dialog>

@@ -27,24 +27,22 @@ import {OrdenesFormaPagoValues} from "../../../helpers/OrdenesFormaPagoValues.js
 import {UpdatePatchOneOrder} from "../../../services/remote/put/UpdatePatchOneOrder";
 import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
 
-const OrdenesFormaPagoModal = ({
-                                   OrdenesFormaPagoShowModal,
-                                   setOrdenesFormaPagoShowModal,
-                                   datosSeleccionados,
-                                   fetchData
-                               }) => {
+const OrdenesFormaPagoDetailsModal = ({
+                                          OrdenesFormaPagoDetailsShowModal,
+                                          setOrdenesFormaPagoDetailsShowModal,
+                                          dataRow
+                                      }) => {
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
-    const [Loading, setLoading] = useState(false);
 
     //Para ver la data que trae el documento completo desde el dispatch de ShippingsTable
     //FIC: Definition Formik y Yup.
     const formik = useFormik({
         initialValues: {
-            IdTipoPagoOK: "",
-            MontoPagado: "",
-            MontoRecibido: "",
-            MontoDevuelto: "",
+            IdTipoPagoOK: dataRow?.IdTipoPagoOK || "",
+            MontoPagado: dataRow?.MontoPagado || "",
+            MontoRecibido: dataRow?.MontoRecibido || "",
+            MontoDevuelto: dataRow?.MontoDevuelto || "",
         },
         validationSchema: Yup.object({
             IdTipoPagoOK: Yup.string().required("Campo Requerido"),
@@ -52,51 +50,7 @@ const OrdenesFormaPagoModal = ({
             MontoRecibido: Yup.number().required("Campo Requerido"),
             MontoDevuelto: Yup.number().required("Campo Requerido"),
         }),
-        onSubmit: async (values) => {
-            //FIC: mostramos el Loading.
-            setMensajeExitoAlert("");
-            setMensajeErrorAlert("");
-            setLoading(true);
-
-            //FIC: reiniciamos los estados de las alertas de exito y error.
-            setMensajeErrorAlert(null);
-            setMensajeExitoAlert(null);
-            try {
-
-                const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
-
-                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
-
-                for (let index = 0; index < ordenExistente.forma_pago.length; index++) {
-                    //console.log("Entro")
-                    ordenExistente.estatus[index] = {
-                        IdTipoPagoOK: ordenExistente.forma_pago[index].IdTipoPagoOK,
-                        MontoPagado: ordenExistente.forma_pago[index].MontoPagado,
-                        MontoRecibido: ordenExistente.forma_pago[index].MontoRecibido,
-                        MontoDevuelto: ordenExistente.forma_pago[index].MontoDevuelto,
-                    };
-                    //console.log("Realizo", ordenExistente)
-                }
-
-                const EstatusOrdenes = OrdenesFormaPagoValues(values, ordenExistente);
-                //const EstatusOrdenes = OrdenesEstatusValues(values);
-
-                //console.log("<<Ordenes>>", EstatusOrdenes);
-                // console.log("LA ID QUE SE PASA COMO PARAMETRO ES:", row._id);
-                // Utiliza la función de actualización si estamos en modo de edición
-
-                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, EstatusOrdenes); //se puede sacar el objectid con row._id para lo del fic aaaaaaaaaaaaaaaaaaa
-                setMensajeExitoAlert("Envío actualizado Correctamente");
-                //handleReload(); //usar la función para volver a cargar los datos de la tabla y que se vea la actualizada
-
-                fetchData();
-            } catch (e) {
-                setMensajeExitoAlert(null);
-                setMensajeErrorAlert("No se pudo Registrar");
-            }
-            //FIC: ocultamos el Loading.
-            setLoading(false);
-        },
+        onSubmit: async (values) => {},
     });
 
     //FIC: props structure for TextField Control.
@@ -110,8 +64,8 @@ const OrdenesFormaPagoModal = ({
 
     return (
         <Dialog
-            open={OrdenesFormaPagoShowModal}
-            onClose={() => setOrdenesFormaPagoShowModal(false)}
+            open={OrdenesFormaPagoDetailsShowModal}
+            onClose={() => setOrdenesFormaPagoDetailsShowModal(false)}
             fullWidth
         >
             <form onSubmit={(e) => {
@@ -120,7 +74,7 @@ const OrdenesFormaPagoModal = ({
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo Forma Pago a la Orden</strong>
+                        <strong>Detalles - Forma Pago de la Orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
@@ -133,6 +87,7 @@ const OrdenesFormaPagoModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.IdTipoPagoOK && Boolean(formik.errors.IdTipoPagoOK)}
                         helperText={formik.touched.IdTipoPagoOK && formik.errors.IdTipoPagoOK}
+                        disabled={true}
                     />
                     <TextField
                         id="MontoPagado"
@@ -141,6 +96,7 @@ const OrdenesFormaPagoModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.MontoPagado && Boolean(formik.errors.MontoPagado)}
                         helperText={formik.touched.MontoPagado && formik.errors.MontoPagado}
+                        disabled={true}
                     />
                     <TextField
                         id="MontoRecibido"
@@ -149,6 +105,7 @@ const OrdenesFormaPagoModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.MontoRecibido && Boolean(formik.errors.MontoRecibido)}
                         helperText={formik.touched.MontoRecibido && formik.errors.MontoRecibido}
+                        disabled={true}
                     />
                     <TextField
                         id="MontoDevuelto"
@@ -157,6 +114,7 @@ const OrdenesFormaPagoModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.MontoDevuelto && Boolean(formik.errors.MontoDevuelto)}
                         helperText={formik.touched.MontoDevuelto && formik.errors.MontoDevuelto}
+                        disabled={true}
                     />
 
                 </DialogContent>
@@ -181,7 +139,7 @@ const OrdenesFormaPagoModal = ({
                         startIcon={<CloseIcon/>}
                         variant="outlined"
                         onClick={() => {
-                            setOrdenesFormaPagoShowModal(false);
+                            setOrdenesFormaPagoDetailsShowModal(false);
                             // reestablecer los valores de mensajes de exito y error
                             setMensajeErrorAlert(null);
                             setMensajeExitoAlert(null);
@@ -192,20 +150,9 @@ const OrdenesFormaPagoModal = ({
                     >
                         <span>CERRAR</span>
                     </LoadingButton>
-                    {/* FIC: Boton de Guardar. */}
-                    <LoadingButton
-                        color="primary"
-                        loadingPosition="start"
-                        startIcon={<SaveIcon/>}
-                        variant="contained"
-                        type="submit"
-                        disabled={formik.isSubmitting || !!mensajeExitoAlert || Loading}
-                    >
-                        <span>GUARDAR</span>
-                    </LoadingButton>
                 </DialogActions>
             </form>
         </Dialog>
     );
 };
-export default OrdenesFormaPagoModal;
+export default OrdenesFormaPagoDetailsModal;

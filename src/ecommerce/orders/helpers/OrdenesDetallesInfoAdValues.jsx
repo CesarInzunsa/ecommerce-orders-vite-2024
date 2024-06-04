@@ -7,7 +7,6 @@ export const OrdenesDetallesInfoAdValues = (values, ordenesDetalleInfoAd, index)
     // Crear un nuevo objeto de estatus
     let nuevoDetalle = {
         IdEtiquetaOK: values.IdEtiquetaOK,
-        IdEtiqueta: values.IdEtiqueta,
         Etiqueta: values.Etiqueta,
         Valor: values.Valor,
         IdTipoSeccionOK: values.IdTipoSeccionOK,

@@ -31,7 +31,7 @@ import MyAutoComplete from "../../../../../share/components/elements/atomos/MyAu
 import Tooltip from "@mui/material/Tooltip";
 import useEtiquetas from "../../../services/remote/useEtiquetas";
 
-const OrdenesInfoAdModal = ({OrdenesInfoAdShowModal, setOrdenesInfoAdShowModal, datosSeleccionados}) => {
+const OrdenesInfoAdModal = ({OrdenesInfoAdShowModal, setOrdenesInfoAdShowModal, datosSeleccionados, fetchData}) => {
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
     const [Loading, setLoading] = useState(false);
@@ -58,7 +58,7 @@ const OrdenesInfoAdModal = ({OrdenesInfoAdShowModal, setOrdenesInfoAdShowModal, 
             IdEtiqueta: Yup.string(),
             IdTipoSeccionOK: Yup.string().required("Campo requerido"),
             Valor: Yup.string("").required("Campo requerido"),
-            Secuencia: Yup.string().required("Campo requerido"),
+            Secuencia: Yup.number().required("Campo requerido"),
         }),
         onSubmit: async (values) => {
 
@@ -80,12 +80,26 @@ const OrdenesInfoAdModal = ({OrdenesInfoAdShowModal, setOrdenesInfoAdShowModal, 
 
                 const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
 
+                // comprobar que la info no exista con el mismo IdEtiquetaOK
+                const infoAdExistente = ordenExistente.info_ad.find(
+                    (infoAd) => infoAd.IdEtiquetaOK === values.IdEtiquetaOK
+                );
+
+                if (infoAdExistente) {
+                    setMensajeExitoAlert(null);
+                    setMensajeErrorAlert("Ya existe un registro con el mismo IdEtiquetaOK");
+                    setLoading(false);
+                    return;
+                }
+
                 const info_ad_data = OrdenesInfoAdValues(values, ordenExistente);
 
                 console.log("<<Ordenes info ad>>", info_ad_data);
                 await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, info_ad_data);
 
                 setMensajeExitoAlert("Info Adicional creada y guardada Correctamente");
+
+                fetchData();
             } catch (e) {
                 setMensajeExitoAlert(null);
                 setMensajeErrorAlert("No se pudo Registrar");
@@ -146,7 +160,7 @@ const OrdenesInfoAdModal = ({OrdenesInfoAdShowModal, setOrdenesInfoAdShowModal, 
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo Estado de la Orden</strong>
+                        <strong>Agregar Nueva info de la Orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
@@ -154,40 +168,23 @@ const OrdenesInfoAdModal = ({OrdenesInfoAdShowModal, setOrdenesInfoAdShowModal, 
                     sx={{display: 'flex', flexDirection: 'column'}}
                     dividers
                 >
-                    <Stack direction="row" alignItems="center">
-                        <MyAutoComplete
-                            disabled={!!mensajeExitoAlert || isNuevaEtiqueta}
-                            label={"Selecciona una Etiqueta"}
-                            options={etiquetas} //Arreglo de objetos
-                            displayProp="Etiqueta" // Propiedad a mostrar
-                            idProp="IdEtiquetaOK" // Propiedad a guardar al dar clic
-                            onSelectValue={(selectedValue) => {
-                                //console.log("Selección:", selectedValue);
-                                formik.values.IdEtiqueta = selectedValue
-                                    ? selectedValue?.IdEtiquetaOK
-                                    : "";
-                                formik.values.IdEtiquetaOK = selectedValue
-                                    ? selectedValue?.IdEtiquetaOK
-                                    : "";
-                                setRefresh(!refresh);
-                            }}
-                        />
-                        <Tooltip title="Agrega manualmente una etiqueta nueva">
-                            <FormControlLabel
-                                sx={{ml: 2}}
-                                control={<Switch defaultChecked/>}
-                                label={
-                                    isNuevaEtiqueta
-                                        ? "Agregar Nueva Etiqueta"
-                                        : "Seleccionar una Etiqueta"
-                                }
-                                onChange={() => {
-                                    setINuevaEtiqueta(!isNuevaEtiqueta);
-                                    formik.values.IdEtiqueta = "";
-                                }}
-                            />
-                        </Tooltip>
-                    </Stack>
+                    <MyAutoComplete
+                        disabled={!!mensajeExitoAlert || isNuevaEtiqueta}
+                        label={"Selecciona una Etiqueta"}
+                        options={etiquetas} //Arreglo de objetos
+                        displayProp="Etiqueta" // Propiedad a mostrar
+                        idProp="IdEtiquetaOK" // Propiedad a guardar al dar clic
+                        onSelectValue={(selectedValue) => {
+                            //console.log("Selección:", selectedValue);
+                            formik.values.IdEtiqueta = selectedValue
+                                ? selectedValue?.IdEtiquetaOK
+                                : "";
+                            formik.values.IdEtiquetaOK = selectedValue
+                                ? selectedValue?.IdEtiquetaOK
+                                : "";
+                            setRefresh(!refresh);
+                        }}
+                    />
                     <TextField
                         id="IdEtiqueta"
                         label="IdEtiqueta*"
@@ -195,6 +192,7 @@ const OrdenesInfoAdModal = ({OrdenesInfoAdShowModal, setOrdenesInfoAdShowModal, 
                         {...commonTextFieldProps}
                         error={formik.touched.IdEtiqueta && Boolean(formik.errors.IdEtiqueta)}
                         helperText={formik.touched.IdEtiqueta && formik.errors.IdEtiqueta}
+                        disabled={true}
                     />
                     <FormControl fullWidth margin="normal">
                         <InputLabel>Selecciona una Seccion</InputLabel>

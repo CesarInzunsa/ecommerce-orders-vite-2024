@@ -36,7 +36,8 @@ const OrdenesUpdateDetallesEstatusModal = ({
                                                setOrdenesUpdateDetallesEstatusShowModal,
                                                datosSeleccionados,
                                                datosSecSubdocDetalles,
-                                               dataRow
+                                               dataRow,
+                                               fetchData
                                            }) => {
 
     // Declarar estados para las alertas de éxito y error
@@ -93,11 +94,25 @@ const OrdenesUpdateDetallesEstatusModal = ({
                     }
                 }
 
+                // Determinar el indice del subdocumento seleccionado
+                const index = ordenExistente.detalle_ps.findIndex((elemento) => (
+                    elemento.IdProdServOK === datosSecSubdocDetalles.IdProdServOK && elemento.IdPresentaOK === datosSecSubdocDetalles.IdPresentaOK
+                ));
+
+                if (values.Actual === true) {
+                    for (let i = 0; i < ordenExistente.detalle_ps[index].estatus.length; i++) {
+                        if (ordenExistente.detalle_ps[index].estatus[i].IdTipoEstatusOK !== dataRow.IdTipoEstatusOK) {
+                            ordenExistente.detalle_ps[index].estatus[i].Actual = "N";
+                        }
+                    }
+                }
+
                 // actualizar la orden
                 await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
 
                 // Declarar estado de exito.
                 setMensajeExitoAlert("Informacion actualizada exitosamente");
+                fetchData();
             } catch (e) {
                 setMensajeExitoAlert(null);
                 setMensajeErrorAlert("Ocurrio un error al actualizar la informacion. Intente de nuevo.");
@@ -163,6 +178,7 @@ const OrdenesUpdateDetallesEstatusModal = ({
                         onBlur={formik.handleBlur}
                         name="IdTipoEstatusOK"
                         aria-label="IdTipoEstatusOK"
+                        disabled={true}
                     >
                         {OrdenesValuesLabel.map((option, index) => (
                             <MenuItem key={option.IdValorOK} value={`IdTipoEstatusFisicoProdServ-${option.key}`}>

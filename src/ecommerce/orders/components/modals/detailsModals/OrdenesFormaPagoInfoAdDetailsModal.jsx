@@ -30,14 +30,11 @@ import {UpdatePatchOneOrder} from "../../../services/remote/put/UpdatePatchOneOr
 import {OrdenesFormaPagoInfoAdValues} from "../../../helpers/OrdenesFormaPagoInfoAdValues.jsx";
 import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
 
-const OrdenesFormaPagoInfoAdUpdateModal = ({
-                                               OrdenesFormaPagoInfoAdUpdateShowModal,
-                                               setOrdenesFormaPagoInfoAdUpdateShowModal,
-                                               datosSeleccionados,
-                                               datosSecSubdocDetalles,
-                                               dataRow,
-                                               fetchData
-                                           }) => {
+const OrdenesFormaPagoInfoAdDetailsModal = ({
+                                                OrdenesFormaPagoInfoAdDetailsShowModal,
+                                                setOrdenesFormaPagoInfoAdDetailsShowModal,
+                                                dataRow
+                                            }) => {
 
     // Declarar estados para las alertas de éxito y error
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
@@ -64,49 +61,6 @@ const OrdenesFormaPagoInfoAdUpdateModal = ({
             Secuencia: Yup.number().required("El Precio es requerido"),
         }),
         onSubmit: async (values) => {
-            //FIC: mostramos el Loading.
-            setMensajeExitoAlert("");
-            setMensajeErrorAlert("");
-            setLoading(true);
-
-            //FIC: reiniciamos los estados de las alertas de exito y error.
-            setMensajeErrorAlert(null);
-            setMensajeExitoAlert(null);
-            try {
-                // Desestructurar datos del documento seleccionado
-                const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
-
-                // Obtener la orden existente
-                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
-
-                //Actualizar la informacion del subdocumento
-                for (let i = 0; i < ordenExistente.forma_pago.length; i++) {
-                    if (ordenExistente.forma_pago[i].IdTipoPagoOK === datosSecSubdocDetalles.IdTipoPagoOK) {
-
-                        for (let j = 0; j < ordenExistente.forma_pago[i].info_ad.length; j++) {
-                            if (ordenExistente.forma_pago[i].info_ad[j].IdSeccionOK === dataRow.IdSeccionOK) {
-                                ordenExistente.forma_pago[i].info_ad[j].Etiqueta = values.Etiqueta;
-                                ordenExistente.forma_pago[i].info_ad[j].Valor = values.Valor;
-                                ordenExistente.forma_pago[i].info_ad[j].Seccion = values.Seccion;
-                                ordenExistente.forma_pago[i].info_ad[j].Secuencia = values.Secuencia;
-                            }
-                        }
-                    }
-                }
-
-                // actualizar la orden
-                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
-
-                // Declarar estado de exito.
-                setMensajeExitoAlert("Informacion actualizada exitosamente");
-
-                fetchData();
-            } catch (e) {
-                setMensajeExitoAlert(null);
-                setMensajeErrorAlert("Ocurrio un error al actualizar la informacion. Intente de nuevo.");
-            }
-            //FIC: ocultamos el Loading.
-            setLoading(false);
         },
     });
 
@@ -121,15 +75,15 @@ const OrdenesFormaPagoInfoAdUpdateModal = ({
 
     return (
         <Dialog
-            open={OrdenesFormaPagoInfoAdUpdateShowModal}
-            onClose={() => setOrdenesFormaPagoInfoAdUpdateShowModal(false)}
+            open={OrdenesFormaPagoInfoAdDetailsShowModal}
+            onClose={() => setOrdenesFormaPagoInfoAdDetailsShowModal(false)}
             fullWidth
         >
             <form onSubmit={formik.handleSubmit}>
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Actualizar Forma Pago Info Ad de la Orden</strong>
+                        <strong>Detalles - Forma Pago Info Ad de la Orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
@@ -151,6 +105,7 @@ const OrdenesFormaPagoInfoAdUpdateModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.Etiqueta && Boolean(formik.errors.Etiqueta)}
                         helperText={formik.touched.Etiqueta && formik.errors.Etiqueta}
+                        disabled={true}
                     />
                     <TextField
                         id="Valor"
@@ -159,6 +114,7 @@ const OrdenesFormaPagoInfoAdUpdateModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.Valor && Boolean(formik.errors.Valor)}
                         helperText={formik.touched.Valor && formik.errors.Valor}
+                        disabled={true}
                     />
                     <TextField
                         id="Seccion"
@@ -167,6 +123,7 @@ const OrdenesFormaPagoInfoAdUpdateModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.Seccion && Boolean(formik.errors.Seccion)}
                         helperText={formik.touched.Seccion && formik.errors.Seccion}
+                        disabled={true}
                     />
                     <TextField
                         id="Secuencia"
@@ -175,6 +132,7 @@ const OrdenesFormaPagoInfoAdUpdateModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.Secuencia && Boolean(formik.errors.Secuencia)}
                         helperText={formik.touched.Secuencia && formik.errors.Secuencia}
+                        disabled={true}
                     />
                 </DialogContent>
                 {/* FIC: Aqui van las acciones del usuario como son las alertas o botones */}
@@ -198,7 +156,7 @@ const OrdenesFormaPagoInfoAdUpdateModal = ({
                         startIcon={<CloseIcon/>}
                         variant="outlined"
                         onClick={() => {
-                            setOrdenesFormaPagoInfoAdUpdateShowModal(false);
+                            setOrdenesFormaPagoInfoAdDetailsShowModal(false);
                             // reestablecer los valores de mensajes de exito y error
                             setMensajeErrorAlert(null);
                             setMensajeExitoAlert(null);
@@ -209,21 +167,9 @@ const OrdenesFormaPagoInfoAdUpdateModal = ({
                     >
                         <span>CERRAR</span>
                     </LoadingButton>
-                    {/* FIC: Boton de Guardar. */}
-                    <LoadingButton
-                        color="primary"
-                        loadingPosition="start"
-                        startIcon={<SaveIcon/>}
-                        variant="contained"
-                        type="submit"
-                        disabled={!!mensajeExitoAlert}
-                        loading={Loading}
-                    >
-                        <span>GUARDAR</span>
-                    </LoadingButton>
                 </DialogActions>
             </form>
         </Dialog>
     );
 };
-export default OrdenesFormaPagoInfoAdUpdateModal;
+export default OrdenesFormaPagoInfoAdDetailsModal;

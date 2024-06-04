@@ -31,13 +31,11 @@ import {OrdenesDetallesEstatusValues} from "../../../helpers/OrdenesDetallesEsta
 import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
 import {GetAllLabels} from "../../../services/remote/get/GetAllLabels";
 
-const OrdenesDetallesEstatusModal = ({
-                                         OrdenesDetallesEstatusShowModal,
-                                         setOrdenesDetallesEstatusShowModal,
-                                         datosSeleccionados,
-                                         datosSecSubdocDetalles,
-                                         fetchData
-                                     }) => {
+const OrdenesDetailsDetallesEstatusModal = ({
+                                               OrdenesDetailsDetallesEstatusShowModal,
+                                               setOrdenesDetailsDetallesEstatusShowModal,
+                                               dataRow,
+                                           }) => {
 
     // Declarar estados para las alertas de éxito y error
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
@@ -56,76 +54,15 @@ const OrdenesDetallesEstatusModal = ({
     //FIC: Definition Formik y Yup.
     const formik = useFormik({
         initialValues: {
-            IdTipoEstatusOK: "",
-            Actual: true,
-            Observacion: ""
+            IdTipoEstatusOK: dataRow?.IdTipoEstatusOK || "",
+            Actual: dataRow?.Actual === "S" ? true : false,
+            Observacion: dataRow?.Observacion || "",
         },
         validationSchema: Yup.object({
             IdTipoEstatusOK: Yup.string().required("Campo requerido"),
             Actual: Yup.boolean().required("Campo requerido"),
         }),
-        onSubmit: async (values) => {
-            //FIC: mostramos el Loading.
-            setMensajeExitoAlert("");
-            setMensajeErrorAlert("");
-            setLoading(true);
-
-            //FIC: reiniciamos los estados de las alertas de exito y error.
-            setMensajeErrorAlert(null);
-            setMensajeExitoAlert(null);
-            try {
-                // Desestructurar datos del documento seleccionado
-                const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
-
-                // Obtener la orden existente
-                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
-
-                // Determinar el indice del subdocumento seleccionado
-                const index = ordenExistente.detalle_ps.findIndex((elemento) => (
-                    elemento.IdProdServOK === datosSecSubdocDetalles.IdProdServOK && elemento.IdPresentaOK === datosSecSubdocDetalles.IdPresentaOK
-                ));
-
-                // comprobar que no exista un estatus con un IdTipoEstatusOK igual al seleccionado
-                const existeEstatus = ordenExistente.detalle_ps[index].estatus.find((elemento) => (
-                    elemento.IdTipoEstatusOK === values.IdTipoEstatusOK
-                ));
-
-                if (existeEstatus) {
-                    setMensajeExitoAlert(null);
-                    setMensajeErrorAlert("Ya existe un estatus con el tipo seleccionado. Intente con otro tipo.");
-                    setLoading(false);
-                    return;
-                }
-
-                for (let i = 0; i < ordenExistente.detalle_ps[index].estatus.length; i++) {
-                    //console.log("Entro")
-                    ordenExistente.detalle_ps[index].estatus[i] = {
-                        IdTipoEstatusOK: ordenExistente.detalle_ps[index].estatus[i].IdTipoEstatusOK,
-                        Actual: values.Actual ? "N" : ordenExistente.detalle_ps[index].estatus[i].Actual,
-                        Observacion: ordenExistente.detalle_ps[index].estatus[i].Observacion
-                    };
-                    //console.log("Realizo", ordenExistente)
-                }
-
-                values.Actual == true ? (values.Actual = "S") : (values.Actual = "N");
-
-                // Obtener los valores de la ventana modal
-                const DetalleEstatusOrdenes = OrdenesDetallesEstatusValues(values, ordenExistente, index);
-
-                // actualizar la orden
-                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, DetalleEstatusOrdenes);
-
-                // Declarar estado de exito.
-                setMensajeExitoAlert("Informacion actualizada exitosamente");
-
-                fetchData();
-            } catch (e) {
-                setMensajeExitoAlert(null);
-                setMensajeErrorAlert("Ocurrio un error al actualizar la informacion. Intente de nuevo.");
-            }
-            //FIC: ocultamos el Loading.
-            setLoading(false);
-        },
+        onSubmit: async (values) => {},
     });
 
     //FIC: props structure for TextField Control.
@@ -161,8 +98,8 @@ const OrdenesDetallesEstatusModal = ({
 
     return (
         <Dialog
-            open={OrdenesDetallesEstatusShowModal}
-            onClose={() => setOrdenesDetallesEstatusShowModal(false)}
+            open={OrdenesDetailsDetallesEstatusShowModal}
+            onClose={() => setOrdenesDetailsDetallesEstatusShowModal(false)}
             fullWidth
         >
             <form onSubmit={(e) => {
@@ -171,7 +108,7 @@ const OrdenesDetallesEstatusModal = ({
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo Detalle-Estatus a la orden</strong>
+                        <strong>Detalles - Detalle-Estatus de la orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
@@ -184,6 +121,7 @@ const OrdenesDetallesEstatusModal = ({
                         onBlur={formik.handleBlur}
                         name="IdTipoEstatusOK"
                         aria-label="IdTipoEstatusOK"
+                        disabled={true}
                     >
                         {OrdenesValuesLabel.map((option, index) => (
                             <MenuItem key={option.IdValorOK} value={`IdTipoEstatusFisicoProdServ-${option.key}`}>
@@ -199,12 +137,12 @@ const OrdenesDetallesEstatusModal = ({
                                 onChange={(event) => {
                                     formik.setFieldValue('Actual', event.target.checked);
                                 }}
-                                disabled={!!mensajeExitoAlert}
                             />
                         }
                         label="Actual*"
                         error={formik.touched.Actual && Boolean(formik.errors.Actual)}
                         helperText={formik.touched.Actual && formik.errors.Actual}
+                        disabled={true}
                     />
                     <TextField
                         id="Observacion"
@@ -221,6 +159,7 @@ const OrdenesDetallesEstatusModal = ({
                         helperText={
                             formik.touched.Observacion && formik.errors.Observacion
                         }
+                        disabled={true}
                     />
                 </DialogContent>
                 {/* FIC: Aqui van las acciones del usuario como son las alertas o botones */}
@@ -246,7 +185,7 @@ const OrdenesDetallesEstatusModal = ({
                         startIcon={<CloseIcon/>}
                         variant="outlined"
                         onClick={() => {
-                            setOrdenesDetallesEstatusShowModal(false);
+                            setOrdenesDetailsDetallesEstatusShowModal(false);
                             // reestablecer los valores de mensajes de exito y error
                             setMensajeErrorAlert(null);
                             setMensajeExitoAlert(null);
@@ -257,20 +196,9 @@ const OrdenesDetallesEstatusModal = ({
                     >
                         <span>CERRAR</span>
                     </LoadingButton>
-                    {/* FIC: Boton de Guardar. */}
-                    <LoadingButton
-                        color="primary"
-                        loadingPosition="start"
-                        startIcon={<SaveIcon/>}
-                        variant="contained"
-                        type="submit"
-                        disabled={formik.isSubmitting || !!mensajeExitoAlert || Loading}
-                    >
-                        <span>GUARDAR</span>
-                    </LoadingButton>
                 </DialogActions>
             </form>
         </Dialog>
     );
 };
-export default OrdenesDetallesEstatusModal;
+export default OrdenesDetailsDetallesEstatusModal;

@@ -17,6 +17,7 @@ import OrdenesInfoAdModal from '../modals/patchModals/OrdenesInfoAdModal.jsx';
 import OrdenesUpdateInfoAdModal from "../modals/updateModals/OrdenesUpdateInfoAdModal.jsx";
 import {UpdatePatchOneOrder} from "../../services/remote/put/UpdatePatchOneOrder.jsx";
 import {showMensajeConfirm, showMensajeError} from "../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import OrdenesDetailsInfoAdModal from "../modals/detailsModals/OrdenesDetailsInfoAdModal.jsx";
 
 // Columns Table Definition.
 const columns = [
@@ -64,6 +65,9 @@ const OrdersInfoTable = ({setDatosSeleccionados, datosSeleccionados}) => {
 
     // Controlar el estado de la fila seleccionada.
     const [dataRow, setDataRow] = useState({});
+
+    // Controlar el estado de la modal para ver los detalles del subdocumento.
+    const [OrdenesDetailsInfoAdShowModal, setOrdenesDetailsInfoAdShowModal] = useState(false);
 
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
@@ -184,7 +188,9 @@ const OrdersInfoTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesDetailsInfoAdShowModal(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -204,6 +210,7 @@ const OrdersInfoTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                                     setOrdenesInfoAdShowModal={setOrdenesInfoAdShowModal}
                                     datosSeleccionados={datosSeleccionados}
                                     onClose={() => setOrdenesInfoAdShowModal(false)}
+                                    fetchData={fetchData}
                                 />
                             </Dialog>
                             <Dialog open={OrdenesUpdateInfoAdShowModal}>
@@ -213,6 +220,15 @@ const OrdersInfoTable = ({setDatosSeleccionados, datosSeleccionados}) => {
                                     datosSeleccionados={datosSeleccionados}
                                     dataRow={dataRow}
                                     onClose={() => setOrdenesUpdateInfoAdShowModal(false)}
+                                    fetchData={fetchData}
+                                />
+                            </Dialog>
+                            <Dialog open={OrdenesDetailsInfoAdShowModal}>
+                                <OrdenesDetailsInfoAdModal
+                                    OrdenesDetailsInfoAdShowModal={OrdenesDetailsInfoAdShowModal}
+                                    setOrdenesDetailsInfoAdShowModal={setOrdenesDetailsInfoAdShowModal}
+                                    dataRow={dataRow}
+                                    onClose={() => setOrdenesDetailsInfoAdShowModal(false)}
                                 />
                             </Dialog>
                         </>

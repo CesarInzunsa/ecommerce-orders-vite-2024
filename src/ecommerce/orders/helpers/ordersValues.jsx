@@ -14,5 +14,9 @@ export const ordersValues = (values) => {
     order.info_ad = [];
     order.detalle_ps = [];
     order.forma_pago = [];
+    order.factura = [];
+    order.cliente = {};
+    order.vendedor = {};
+    order.envios = [];
     return order
 }

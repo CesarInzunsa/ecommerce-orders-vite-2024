@@ -97,6 +97,8 @@ const OrdersEnviosRastreosTable = ({datosSeleccionados, datosSecSubdoc, setDatos
         const {NumeroGuia, IdRepartidorOK} = rowData.original;
 
         setDatosSecSubdocRastreos({NumeroGuia, IdRepartidorOK});
+
+        console.log()
     };
 
     return (

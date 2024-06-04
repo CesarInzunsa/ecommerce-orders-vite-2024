@@ -19,31 +19,26 @@ import SaveIcon from "@mui/icons-material/Save";
 import {useFormik} from "formik";
 import * as Yup from "yup";
 // Importar Services
-import {AddOneOrder} from "../../../services/remote/post/AddOneOrder.jsx";
+import {UpdatePatchOneOrder} from "../../../services/remote/put/UpdatePatchOneOrder.jsx";
 import {GetAllLabels} from "../../../services/remote/get/GetAllLabels.jsx";
 import {GetAllPersons} from "../../../services/remote/get/GetAllPersons.jsx";
 import UseInstitutos from "../../../services/remote/UseInstitutos.jsx";
 // Importar Helpers
-import {ordersValues} from "../../../helpers/ordersValues.jsx";
-// Importar el generador de ID
-import {v4 as genID} from "uuid";
 // Importar custom Hook
-import MyAutoComplete from "../../../../../share/components/elements/atomos/MyAutoComplete.jsx";
 import MenuItem from "@mui/material/MenuItem";
 import Autocomplete from "@mui/material/Autocomplete";
 import {GetAllInstitutes} from "../../../services/remote/get/GetAllInstitutes.jsx";
+import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
 
-const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) => {
+const OrdenesDetailsModal = ({OrdenesDetailsShowModal, setOrdenesDetailsShowModal, dataRow}) => {
 
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
     const [Loading, setLoading] = useState(false);
-    const [IdGen, setIdGen] = useState(genID().replace(/-/g, "").substring(0, 12));
     const [TipoOrdenesValuesLabel, setTipoOrdenesValuesLabel] = useState([]);
     const [RolValuesLabel, setRolValuesLabel] = useState([]);
     const [PersonaValuesLabel, setPersonaValuesLabel] = useState([]);
     const [InstitutosValues, setInstitutosValues] = useState([]);
-    const [refresh, setRefresh] = useState(false);
 
     // Creamos un useEffect para que se ejecute cada vez que cambie el valor de IdInstitutoOK
     useEffect(() => {
@@ -91,28 +86,6 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
         }
     }
 
-    // Función para obtener los institutos desde la base de datos de cat_institutos
-    async function getInstitutos() {
-        try {
-            // Obtenemos los institutos
-            const institutos = await GetAllInstitutes();
-            // Comprueba si institutos es un array y si tiene datos
-            if (Array.isArray(institutos) && institutos.length > 0) {
-                // Mapeamos los valores para obtener un array de objetos con las propiedades Alias y key
-                const IdValoresOK = institutos.map((valor, index) => ({
-                    Alias: valor.Alias,
-                    key: valor.IdInstitutoOK,
-                }));
-                // Actualizamos el estado de InstitutosValues
-                setInstitutosValues(IdValoresOK);
-            } else {
-                console.log('El resultado de getInstitutos() no es un array o está vacío');
-            }
-        } catch (error) {
-            console.error("Error al obtener getInstitutos:", error);
-        }
-    }
-
     // Función para obtener los tipos de personas desde la base de datos de labels
     async function getPersonsByTipo() {
         try {
@@ -135,16 +108,38 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
         }
     }
 
+    // Función para obtener los institutos desde la base de datos de cat_institutos
+    async function getInstitutos() {
+        try {
+            // Obtenemos los institutos
+            const institutos = await GetAllInstitutes();
+            // Comprueba si institutos es un array y si tiene datos
+            if (Array.isArray(institutos) && institutos.length > 0) {
+                // Mapeamos los valores para obtener un array de objetos con las propiedades Alias y key
+                const IdValoresOK = institutos.map((valor, index) => ({
+                    Alias: valor.Alias,
+                    key: valor.IdInstitutoOK,
+                }));
+                // Actualizamos el estado de InstitutosValues
+                setInstitutosValues(IdValoresOK);
+            } else {
+                console.log('El resultado de getInstitutos() no es un array o está vacío');
+            }
+        } catch (error) {
+            console.error("Error al obtener getInstitutos:", error);
+        }
+    }
+
     // Definition Formik y Yup.
     const formik = useFormik({
         initialValues: {
-            IdInstitutoOK: "",
-            IdNegocioOK: "",
-            IdOrdenOK: "",
-            IdOrdenBK: "",
-            IdTipoOrdenOK: "",
-            IdRolOK: "",
-            IdPersonaOK: "",
+            IdInstitutoOK: dataRow.IdInstitutoOK || "",
+            IdNegocioOK: dataRow.IdNegocioOK || "",
+            IdOrdenOK: dataRow.IdOrdenOK || "",
+            IdOrdenBK: dataRow.IdOrdenBK || "",
+            IdTipoOrdenOK: dataRow.IdTipoOrdenOK || "",
+            IdRolOK: dataRow.IdRolOK || "",
+            IdPersonaOK: dataRow.IdPersonaOK || "",
         },
         validationSchema: Yup.object({
             IdInstitutoOK: Yup.string().required("Campo requerido"),
@@ -160,33 +155,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
             IdRolOK: Yup.string().required("Campo requerido"),
             IdPersonaOK: Yup.string().required("Campo requerido"),
         }),
-        onSubmit: async (values) => {
-            // Mostramos el Loading.
-            setLoading(true);
-
-            // Reiniciamos los estados de las alertas de exito y error.
-            setMensajeErrorAlert(null);
-            setMensajeExitoAlert(null);
-
-            // Try-catch para manejar errores.
-            try {
-                // Extraer los datos de los campos de la ventana modal que ya tiene Formik.
-                const order = ordersValues(values);
-                // Llamamos al servicio para agregar una nueva orden
-                await AddOneOrder(order);
-                // Si no hubo errores, mostramos el mensaje de exito.
-                setMensajeExitoAlert("Orden creada y guardada correctamente");
-
-                // Hacer un fetch de la data
-                fetchData();
-            } catch (e) {
-                setMensajeExitoAlert(null);
-                setMensajeErrorAlert("No se pudo crear la orden");
-            }
-
-            // Ocultamos el Loading.
-            setLoading(false);
-        },
+        onSubmit: async (values) => {},
     });
 
     // props structure for TextField Control.
@@ -200,30 +169,17 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
 
     const {etiquetas, etiquetaEspecifica} = UseInstitutos({IdInstitutoOK: formik.values.IdInstitutoOK || "",});
 
-    useEffect(() => {
-        if (formik.values.IdInstitutoOK) {
-            updateIdOrdenOK(); // Actualizar IdEntregaOK al cambiar IdInstitutoOK o IdNegocioOK
-        }
-    }, [formik.values.IdInstitutoOK]);
-
-    const updateIdOrdenOK = () => {
-        formik.setFieldValue(
-            "IdOrdenOK",
-            `${formik.values.IdInstitutoOK}-${IdGen}`
-        );
-    };
-
     return (
         <Dialog
-            open={AddOrdenShowModal}
-            onClose={() => setAddOrdenShowModal(false)}
+            open={OrdenesDetailsShowModal}
+            onClose={() => setOrdenesDetailsShowModal(false)}
             fullWidth
         >
             <form onSubmit={formik.handleSubmit}>
                 {/* Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography component="h6">
-                        <strong>Agregar nueva orden</strong>
+                        <strong>Detalles orden</strong>
                     </Typography>
                 </DialogTitle>
                 <DialogContent
@@ -234,7 +190,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
                     <Autocomplete
                         id="dynamic-autocomplete-instituto"
                         options={InstitutosValues}
-
+                        disabled={true}
                         getOptionLabel={(option) => option.Alias}
                         value={InstitutosValues.find((option) => option.key === formik.values.IdInstitutoOK) || null}
                         onChange={(e, newValue) => {
@@ -249,7 +205,6 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
                             />
                         )}
                     />
-
                     <FormControl fullWidth margin="normal">
                         <InputLabel>Selecciona un Negocio</InputLabel>
                         <Select
@@ -258,9 +213,9 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
                             onChange={formik.handleChange}
                             name="IdNegocioOK" // Asegúrate de que coincida con el nombre del campo
                             onBlur={formik.handleBlur}
-                            disabled={!!mensajeExitoAlert}
                             error={formik.touched.IdNegocioOK && Boolean(formik.errors.IdNegocioOK)}
                             helperText={formik.touched.IdNegocioOK && formik.errors.IdNegocioOK}
+                            disabled={true}
                         >
                             {etiquetaEspecifica?.cat_negocios.map((seccion) => {
                                 return (
@@ -296,6 +251,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
                         {...commonTextFieldProps}
                         error={formik.touched.IdOrdenBK && Boolean(formik.errors.IdOrdenBK)}
                         helperText={formik.touched.IdOrdenBK && formik.errors.IdOrdenBK}
+                        disabled={true}
                     />
 
                     <FormControl fullWidth margin="normal">
@@ -306,6 +262,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                             name="IdTipoOrdenOK"
+                            disabled={true}
                             aria-label="TipoOrden"
                             error={formik.touched.IdTipoOrdenOK && Boolean(formik.errors.IdTipoOrdenOK)}
                             helperText={formik.touched.IdTipoOrdenOK && formik.errors.IdTipoOrdenOK}
@@ -325,6 +282,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
                             value={formik.values.IdRolOK}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
+                            disabled={true}
                             name="IdRolOK"
                             aria-label="Rol"
                             error={formik.touched.IdRolOK && Boolean(formik.errors.IdRolOK)}
@@ -341,7 +299,7 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
                     <Autocomplete
                         id="dynamic-autocomplete-persona"
                         options={PersonaValuesLabel}
-
+                        disabled={true}
                         getOptionLabel={(option) => option.IdValorOK}
                         value={PersonaValuesLabel.find((option) => option.key === formik.values.IdPersonaOK) || null}
                         onChange={(e, newValue) => {
@@ -383,27 +341,13 @@ const AddOrdenesModal = ({AddOrdenShowModal, setAddOrdenShowModal, fetchData}) =
                         loadingPosition="start"
                         startIcon={<CloseIcon/>}
                         variant="outlined"
-                        onClick={() => setAddOrdenShowModal(false)}
+                        onClick={() => setOrdenesDetailsShowModal(false)}
                     >
                         <span>CERRAR</span>
-                    </LoadingButton>
-                    {/* Boton de Guardar. */}
-                    <LoadingButton
-                        color="primary"
-                        loadingPosition="start"
-                        startIcon={<SaveIcon/>}
-                        variant="contained"
-                        //onClick={() => setAddInstituteShowModal(false)}
-                        type="submit"
-                        disabled={!!mensajeExitoAlert}
-
-                        loading={Loading}
-                    >
-                        <span>GUARDAR</span>
                     </LoadingButton>
                 </DialogActions>
             </form>
         </Dialog>
     );
 };
-export default AddOrdenesModal;
+export default OrdenesDetailsModal;

@@ -35,7 +35,8 @@ const OrdenesDetallesPaqueteUpdateModal = ({
                                                setOrdenesDetallesPaqueteUpdateShowModal,
                                                datosSeleccionados,
                                                datosSecSubdocDetalles,
-                                               dataRow
+                                               dataRow,
+                                               fetchData
                                            }) => {
 
     // Declarar estados para las alertas de éxito y error
@@ -95,6 +96,8 @@ const OrdenesDetallesPaqueteUpdateModal = ({
 
                 // Declarar estado de exito.
                 setMensajeExitoAlert("Informacion actualizada exitosamente");
+
+                fetchData();
             } catch (e) {
                 setMensajeExitoAlert(null);
                 setMensajeErrorAlert("Ocurrio un error al actualizar la informacion. Intente de nuevo.");
@@ -123,7 +126,7 @@ const OrdenesDetallesPaqueteUpdateModal = ({
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo Detalle-Paquete a la orden</strong>
+                        <strong>Actualizar Detalle-Paquete a la orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
@@ -136,6 +139,7 @@ const OrdenesDetallesPaqueteUpdateModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.idPresentaOK && Boolean(formik.errors.idPresentaOK)}
                         helperText={formik.touched.idPresentaOK && formik.errors.idPresentaOK}
+                        disabled={true}
                     />
                     <TextField
                         id="DesPresenta"

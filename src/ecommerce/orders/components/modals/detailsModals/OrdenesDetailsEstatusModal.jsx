@@ -28,7 +28,11 @@ import {UpdatePatchOneOrder} from "../../../services/remote/put/UpdatePatchOneOr
 import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
 import {GetAllLabels} from "../../../services/remote/get/GetAllLabels";
 
-const OrdenesEstatusModal = ({OrdenesEstatusShowModal, setOrdenesEstatusShowModal, datosSeleccionados, fetchData}) => {
+const OrdenesDetailsEstatusModal = ({
+                                       OrdenesUpdateEstatusShowModal,
+                                       setOrdenesUpdateEstatusShowModal,
+                                       dataRow,
+                                   }) => {
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
     const [Loading, setLoading] = useState(false);
@@ -39,68 +43,15 @@ const OrdenesEstatusModal = ({OrdenesEstatusShowModal, setOrdenesEstatusShowModa
     //FIC: Definition Formik y Yup.
     const formik = useFormik({
         initialValues: {
-            IdTipoEstatusOK: "",
-            Actual: false,
-            Observacion: ""
+            IdTipoEstatusOK: dataRow.IdTipoEstatusOK || "",
+            Actual: dataRow.Actual === "S" ? true : false,
+            Observacion: dataRow.Observacion || "",
         },
         validationSchema: Yup.object({
             IdTipoEstatusOK: Yup.string().required("Campo requerido"),
             Actual: Yup.boolean().required("Campo requerido"),
         }),
-        onSubmit: async (values) => {
-            //FIC: mostramos el Loading.
-            setMensajeExitoAlert("");
-            setMensajeErrorAlert("");
-            setLoading(true);
-
-            //FIC: reiniciamos los estados de las alertas de exito y error.
-            setMensajeErrorAlert(null);
-            setMensajeExitoAlert(null);
-            try {
-
-                const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
-
-                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
-
-                // Comprobar si el subdocumento de estatus ya tiene un estado igual al que se quiere insertar
-                const existeEstatus = ordenExistente.estatus.find(
-                    (estatus) => estatus.IdTipoEstatusOK === values.IdTipoEstatusOK
-                );
-                if (existeEstatus) {
-                    setMensajeErrorAlert("Ya existe un estado con el mismo tipo de estatus");
-                    setLoading(false);
-                    return;
-                }
-
-                for (let index = 0; index < ordenExistente.estatus.length; index++) {
-                    console.log("Entro")
-                    ordenExistente.estatus[index] = {
-                        IdTipoEstatusOK: ordenExistente.estatus[index].IdTipoEstatusOK,
-                        Actual: values.Actual? "N": ordenExistente.estatus[index].Actual,
-                        Observacion: ordenExistente.estatus[index].Observacion
-                    };
-                    console.log("Realizo", ordenExistente)
-                }
-                values.Actual === true ? (values.Actual = "S") : (values.Actual = "N");
-
-                const EstatusOrdenes = OrdenesEstatusValues(values, ordenExistente);
-                //const EstatusOrdenes = OrdenesEstatusValues(values);
-
-                console.log("<<Ordenes>>", EstatusOrdenes);
-                // console.log("LA ID QUE SE PASA COMO PARAMETRO ES:", row._id);
-                // Utiliza la función de actualización si estamos en modo de edición
-
-                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, EstatusOrdenes); //se puede sacar el objectid con row._id para lo del fic aaaaaaaaaaaaaaaaaaa
-                setMensajeExitoAlert("Envío actualizado Correctamente");
-                //usar la función para volver a cargar los datos de la tabla y que se vea la actualizada
-                fetchData();
-            } catch (e) {
-                setMensajeExitoAlert(null);
-                setMensajeErrorAlert("No se pudo Registrar");
-            }
-            //FIC: ocultamos el Loading.
-            setLoading(false);
-        },
+        onSubmit: async (values) => {},
     });
 
     //FIC: props structure for TextField Control.
@@ -111,7 +62,6 @@ const OrdenesEstatusModal = ({OrdenesEstatusShowModal, setOrdenesEstatusShowModa
         margin: "dense",
         disabled: !!mensajeExitoAlert,
     };
-
 
     async function getDataSelectOrdenesType2() {
         try {
@@ -141,8 +91,8 @@ const OrdenesEstatusModal = ({OrdenesEstatusShowModal, setOrdenesEstatusShowModa
 
     return (
         <Dialog
-            open={OrdenesEstatusShowModal}
-            onClose={() => setOrdenesEstatusShowModal(false)}
+            open={OrdenesUpdateEstatusShowModal}
+            onClose={() => setOrdenesUpdateEstatusShowModal(false)}
             fullWidth
         >
             <form onSubmit={(e) => {
@@ -151,27 +101,21 @@ const OrdenesEstatusModal = ({OrdenesEstatusShowModal, setOrdenesEstatusShowModa
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo Estado de la Orden</strong>
+                        <strong>Detalles Estado de la Orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
                 <DialogContent sx={{display: 'flex', flexDirection: 'column'}} dividers>
                     {/* FIC: Campos de captura o selección */}
-                    <InputLabel htmlFor="dynamic-select-tipo-orden">Tipo de Orden</InputLabel>
-                    <Select
-                        id="dynamic-select-tipo-orden"
+                    <TextField
+                        id="IdTipoEstatusOK"
+                        label="IdTipoEstatusOK*"
                         value={formik.values.IdTipoEstatusOK}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        name="IdTipoEstatusOK"
-                        aria-label="TipoOrden"
-                    >
-                        {OrdenesValuesLabel.map((option, index) => (
-                            <MenuItem key={option.IdValorOK} value={`IdEstatusOrden-${option.key}`}>
-                                {option.IdValorOK}
-                            </MenuItem>
-                        ))}
-                    </Select>
+                        {...commonTextFieldProps}
+                        error={formik.touched.IdTipoEstatusOK && Boolean(formik.errors.IdTipoEstatusOK)}
+                        helperText={formik.touched.IdTipoEstatusOK && formik.errors.IdTipoEstatusOK}
+                        disabled={true}
+                    />
                     <FormControlLabel
                         control={
                             <Checkbox
@@ -181,12 +125,12 @@ const OrdenesEstatusModal = ({OrdenesEstatusShowModal, setOrdenesEstatusShowModa
                                     formik.setFieldValue('Actual', event.target.checked);
                                 }}
                                 {...commonTextFieldProps}
-                                disabled={!!mensajeExitoAlert}
                             />
                         }
                         label="Actual*"
                         error={formik.touched.Actual && Boolean(formik.errors.Actual)}
                         helperText={formik.touched.Actual && formik.errors.Actual}
+                        disabled={true}
                     />
                     <TextField
                         id="Observacion"
@@ -198,6 +142,7 @@ const OrdenesEstatusModal = ({OrdenesEstatusShowModal, setOrdenesEstatusShowModa
                         {...commonTextFieldProps}
                         error={formik.touched.Observacion && Boolean(formik.errors.Observacion)}
                         helperText={formik.touched.Observacion && formik.errors.Observacion}
+                        disabled={true}
                     />
 
                 </DialogContent>
@@ -223,24 +168,13 @@ const OrdenesEstatusModal = ({OrdenesEstatusShowModal, setOrdenesEstatusShowModa
                         loadingPosition="start"
                         startIcon={<CloseIcon/>}
                         variant="outlined"
-                        onClick={() => setOrdenesEstatusShowModal(false)}
+                        onClick={() => setOrdenesUpdateEstatusShowModal(false)}
                     >
                         <span>CERRAR</span>
-                    </LoadingButton>
-                    {/* FIC: Boton de Guardar. */}
-                    <LoadingButton
-                        color="primary"
-                        loadingPosition="start"
-                        startIcon={<SaveIcon/>}
-                        variant="contained"
-                        type="submit"
-                        disabled={formik.isSubmitting || !!mensajeExitoAlert || Loading}
-                    >
-                        <span>GUARDAR</span>
                     </LoadingButton>
                 </DialogActions>
             </form>
         </Dialog>
     );
 };
-export default OrdenesEstatusModal;
+export default OrdenesDetailsEstatusModal;
