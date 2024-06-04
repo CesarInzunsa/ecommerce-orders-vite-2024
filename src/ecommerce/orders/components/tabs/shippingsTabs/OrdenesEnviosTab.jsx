@@ -40,12 +40,12 @@ export default function OrdenesEnviosTab({datosSeleccionados}) {
                 />
             }
 
-            {currentNameTabInProveedoresTab == "INFO_AD" &&
-                <OrdenesEnviosInfoAd
-                    datosSeleccionados={datosSeleccionados}
-                    datosSecSubdoc={datosSecSubdoc}
-                />
-            }
+            {/*{currentNameTabInProveedoresTab == "INFO_AD" &&*/}
+            {/*    <OrdenesEnviosInfoAd*/}
+            {/*        datosSeleccionados={datosSeleccionados}*/}
+            {/*        datosSecSubdoc={datosSecSubdoc}*/}
+            {/*    />*/}
+            {/*}*/}
 
             {currentNameTabInProveedoresTab == "PRODUCTOS" &&
                 <OrdenesEnviosProductos
