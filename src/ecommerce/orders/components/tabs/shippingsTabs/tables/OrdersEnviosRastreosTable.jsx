@@ -11,6 +11,17 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 
 // DB
 import {GetOneOrder} from '../../../../services/remote/get/GetOneOrder.jsx';
+import OrdenesEnviosEstatusModal from "../../../modals/patchModals/OrdenesEnviosEstatusModal.jsx";
+import OrdenesEnviosRastreosRastreosModal from "../../../modals/patchModals/OrdenesEnviosRastreosRastreosModal.jsx";
+import OrdenesEnviosRastreosRastreosModalUpdate
+    from "../../../modals/updateModals/OrdenesEnviosRastreosRastreosModalUpdate.jsx";
+import {UpdatePatchOneOrder} from "../../../../services/remote/put/UpdatePatchOneOrder.jsx";
+import {
+    showMensajeConfirm,
+    showMensajeError
+} from "../../../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import OrdenesEnviosRastreosRastreosModalDetails
+    from "../../../modals/detailsModals/OrdenesEnviosRastreosRastreosModalDetails.jsx";
 
 // Modals
 
@@ -61,6 +72,15 @@ const OrdersEnviosRastreosTable = ({datosSeleccionados, datosSecSubdoc, setDatos
     // Controlar la informacion seleccionada
     const [dataRow, setDataRow] = useState();
 
+    // controlar modal update rastreo
+    const [OrdenesEnviosRastreosRastreosShowModalUpdate, setOrdenesEnviosRastreosRastreosShowModalUpdate] = useState(false);
+
+    // controlar modal add rastreo
+    const [OrdenesEnviosRastreosRastreosShowModal, setOrdenesEnviosRastreosRastreosShowModal] = useState(false);
+
+    // controlar modal details
+    const [OrdenesEnviosRastreosRastreosShowModalDetails, setOrdenesEnviosRastreosRastreosShowModalDetails] = useState(false);
+
     async function fetchData() {
         try {
             // Obtener los id's seleccionados
@@ -88,6 +108,50 @@ const OrdersEnviosRastreosTable = ({datosSeleccionados, datosSecSubdoc, setDatos
     useEffect(() => {
         fetchData();
     }, []);
+
+    // Funcion par eliminar estatus órdenes
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `El rastreo de la factura con el ID: ${
+                (dataRow.NumeroGuia)
+            } será eliminada, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                // buscar indice de envios
+                const indexEnvios = ordenExistente.envios.findIndex((elemento) => {
+                    return elemento.IdDomicilioOK === datosSecSubdoc.IdDomicilioOK && elemento.IdPaqueteriaOK === datosSecSubdoc.IdPaqueteriaOK
+                });
+
+                // Buscar el indice de rastreo
+                const indexRastreo = ordenExistente.envios[indexEnvios].rastreos.findIndex((elemento) => {
+                    return elemento.NumeroGuia === dataRow.NumeroGuia && elemento.IdRepartidorOK === dataRow.IdRepartidorOK
+                });
+
+                // Eliminar el rastreo
+                ordenExistente.envios[indexEnvios].rastreos.splice(indexRastreo, 1);
+
+                // Actualiza el documento con el endpoint
+                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
+
+                // Mostrar mensaje de confirmación
+                await showMensajeConfirm("Rastreo eliminado con exito");
+
+                // Actualizar la data
+                await fetchData();
+
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar el rastreo`);
+            }
+        }
+    };
 
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
@@ -123,27 +187,29 @@ const OrdersEnviosRastreosTable = ({datosSeleccionados, datosSecSubdoc, setDatos
                                 <Box>
                                     <Tooltip title="Agregar">
                                         <IconButton
-                                            //onClick={() => setOrdenesDetallesEstatusShowModal(true)}
+                                            onClick={() => setOrdenesEnviosRastreosRastreosShowModal(true)}
                                         >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
                                         <IconButton
-                                            //onClick={() => setOrdenesUpdateDetallesEstatusShowModal(true)}
+                                            onClick={() => setOrdenesEnviosRastreosRastreosShowModalUpdate(true)}
                                         >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
                                         <IconButton
-                                            //onClick={() => handleDelete()}
+                                            onClick={() => handleDelete()}
                                         >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesEnviosRastreosRastreosShowModalDetails(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -160,10 +226,42 @@ const OrdersEnviosRastreosTable = ({datosSeleccionados, datosSecSubdoc, setDatos
                     )}
                 />
                 {/* M O D A L E S */}
-                {/*<Dialog open={OrdenesDetallesEstatusShowModal}>*/}
-                {/*</Dialog>*/}
-                {/*<Dialog open={OrdenesUpdateDetallesEstatusShowModal}>*/}
-                {/*</Dialog>*/}
+                <Dialog open={OrdenesEnviosRastreosRastreosShowModal}>
+                    <OrdenesEnviosRastreosRastreosModal
+                        OrdenesEnviosRastreosRastreosShowModal={OrdenesEnviosRastreosRastreosShowModal}
+                        setOrdenesEnviosRastreosRastreosShowModal={setOrdenesEnviosRastreosRastreosShowModal}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdoc={datosSecSubdoc}
+                        onClose={() => {
+                            setOrdenesEnviosRastreosRastreosShowModal(false)
+                        }}
+                        fetchData={fetchData}
+                    />
+                </Dialog>
+                <Dialog open={OrdenesEnviosRastreosRastreosShowModalUpdate}>
+                    <OrdenesEnviosRastreosRastreosModalUpdate
+                        OrdenesEnviosRastreosRastreosShowModalUpdate={OrdenesEnviosRastreosRastreosShowModalUpdate}
+                        setOrdenesEnviosRastreosRastreosShowModalUpdate={setOrdenesEnviosRastreosRastreosShowModalUpdate}
+                        datosSeleccionados={datosSeleccionados}
+                        datosSecSubdoc={datosSecSubdoc}
+                        onClose={() => {
+                            setOrdenesEnviosRastreosRastreosShowModalUpdate(false)
+                        }}
+                        fetchData={fetchData}
+                        dataRow={dataRow}
+                    />
+                </Dialog>
+
+                <Dialog open={OrdenesEnviosRastreosRastreosShowModalDetails}>
+                    <OrdenesEnviosRastreosRastreosModalDetails
+                        OrdenesEnviosRastreosRastreosShowModalDetails={OrdenesEnviosRastreosRastreosShowModalDetails}
+                        setOrdenesEnviosRastreosRastreosShowModalDetails={setOrdenesEnviosRastreosRastreosShowModalDetails}
+                        onClose={() => {
+                            setOrdenesEnviosRastreosRastreosShowModalDetails(false)
+                        }}
+                        dataRow={dataRow}
+                    />
+                </Dialog>
             </Box>
         </Box>
     );
