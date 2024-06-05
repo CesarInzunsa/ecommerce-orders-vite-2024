@@ -11,6 +11,15 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 
 // DB
 import {GetOneOrder} from '../../../../services/remote/get/GetOneOrder.jsx';
+import OrdenesDetailsFacturaFacturaModal from "../../../modals/detailsModals/OrdenesDetailsFacturaFacturaModal.jsx";
+import OrdenesClientesModal from "../../../modals/patchModals/OrdenesClientesModal.jsx";
+import OrdenesClientesModalUpdate from "../../../modals/updateModals/OrdenesClientesModalUpdate.jsx";
+import {UpdatePatchOneOrder} from "../../../../services/remote/put/UpdatePatchOneOrder.jsx";
+import {
+    showMensajeConfirm,
+    showMensajeError
+} from "../../../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import OrdenesClientesModalUpdateDetails from "../../../modals/detailsModals/OrdenesClientesModalDetails.jsx";
 
 // Modals
 
@@ -125,6 +134,15 @@ const OrdenesClienteTable = ({datosSeleccionados}) => {
     // Controlar el estado de la fila seleccionada.
     const [dataRow, setDataRow] = useState({});
 
+    // controlar modal insertar cliente
+    const [OrdenesClientesShowModal, setOrdenesClientesShowModal] = useState(false);
+
+    // controlar modal update cliente
+    const [OrdenesClientesShowModalUpdate, setOrdenesClientesShowModalUpdate] = useState(false);
+
+    // controlar modal details cliente
+    const [OrdenesClientesShowModalDetails, setOrdenesClientesShowModalDetails] = useState(false);
+
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
         // Guardar la informacion seleccionada
@@ -144,6 +162,13 @@ const OrdenesClienteTable = ({datosSeleccionados}) => {
 
             // Obtener los datos
             const ordersData = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+            if (ordersData.cliente === undefined || ordersData.cliente === null) {
+                setOrdersData([]);
+                setLoadingTable(false);
+                return;
+            }
+
             setOrdersData([ordersData.cliente]);
             // Cambiar el estado del indicador (loading) a false.
             setLoadingTable(false);
@@ -155,6 +180,59 @@ const OrdenesClienteTable = ({datosSeleccionados}) => {
     useEffect(() => {
         fetchData();
     }, []);
+
+    // Funcion par eliminar estatus órdenes
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `El cliente con el ID: ${
+                (dataRow.IdUsuarioOK)
+            } será eliminado, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                ordenExistente.cliente = {
+                    IdUsuarioOK: "",
+                    IdPersonaOK: "",
+                    Usuario: "",
+                    Alias: "",
+                    Nombre: "",
+                    ApParterno: "",
+                    ApMaterno: "",
+                    FullUserName: "",
+                    RFC: "",
+                    CURP: "",
+                    Sexo: "",
+                    IdTipoPersonaOK: "",
+                    FechaNac: "",
+                    IdTipoEstatusOK: "",
+                    IdRolActualOK: "",
+                    IdRolPrincipalOK: "",
+                    FotoPerfil: "",
+                    Email: "",
+                    TelMovil: "",
+                };
+
+                // Actualiza el documento con el endpoint
+                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
+
+                // Mostrar mensaje de confirmación
+                await showMensajeConfirm("Cliente eliminado con exito");
+
+                // Actualizar la data
+                await fetchData();
+
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar el cliente`);
+            }
+        }
+    };
 
     return (
         <Box>
@@ -178,27 +256,29 @@ const OrdenesClienteTable = ({datosSeleccionados}) => {
                                 <Box>
                                     <Tooltip title="Agregar">
                                         <IconButton
-                                            //onClick={() => setOrdenesInfoAdShowModal(true)}
+                                            onClick={() => setOrdenesClientesShowModal(true)}
                                         >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
                                         <IconButton
-                                            //onClick={() => setOrdenesUpdateInfoAdShowModal(true)}
+                                            onClick={() => setOrdenesClientesShowModalUpdate(true)}
                                         >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
                                         <IconButton
-                                            //onClick={() => handleDelete()}
+                                            onClick={() => handleDelete()}
                                         >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesClientesShowModalDetails(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -212,12 +292,41 @@ const OrdenesClienteTable = ({datosSeleccionados}) => {
                             </Stack>
                             {/* ------- BARRA DE ACCIONES FIN ------ */}
                             {/* M O D A L E S */}
-                            {/*<Dialog open={OrdenesInfoAdShowModal}>*/}
+                            <Dialog open={OrdenesClientesShowModal}>
+                                <OrdenesClientesModal
+                                    OrdenesClientesShowModal={OrdenesClientesShowModal}
+                                    setOrdenesClientesShowModal={setOrdenesClientesShowModal}
+                                    datosSeleccionados={datosSeleccionados}
+                                    fetchData={fetchData}
+                                    onClose={() => {
+                                        setOrdenesClientesShowModal(false)
+                                    }}
+                                />
+                            </Dialog>
 
-                            {/*</Dialog>*/}
-                            {/*<Dialog open={OrdenesUpdateInfoAdShowModal}>*/}
+                            <Dialog open={OrdenesClientesShowModalUpdate}>
+                                <OrdenesClientesModalUpdate
+                                    OrdenesClientesShowModalUpdate={OrdenesClientesShowModalUpdate}
+                                    setOrdenesClientesShowModalUpdate={setOrdenesClientesShowModalUpdate}
+                                    datosSeleccionados={datosSeleccionados}
+                                    fetchData={fetchData}
+                                    dataRow={dataRow}
+                                    onClose={() => {
+                                        setOrdenesClientesShowModalUpdate(false)
+                                    }}
+                                />
+                            </Dialog>
 
-                            {/*</Dialog>*/}
+                            <Dialog open={OrdenesClientesShowModalDetails}>
+                                <OrdenesClientesModalUpdateDetails
+                                    OrdenesClientesShowModalDetails={OrdenesClientesShowModalDetails}
+                                    setOrdenesClientesShowModalDetails={setOrdenesClientesShowModalDetails}
+                                    dataRow={dataRow}
+                                    onClose={() => {
+                                        setOrdenesClientesShowModalDetails(false)
+                                    }}
+                                />
+                            </Dialog>
                         </>
                     )}
                 />
