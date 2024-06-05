@@ -22,9 +22,9 @@ import {OrdenesInfoAdValues} from "../../../helpers/OrdenesInfoAdValues.jsx";
 import {UpdatePatchOneOrder} from "../../../services/remote/put/UpdatePatchOneOrder";
 import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
 
-const OrdenesClientesModal = ({
-                                  OrdenesClientesShowModal,
-                                  setOrdenesClientesShowModal,
+const OrdenesVendedorModal = ({
+                                  OrdenesVendedorShowModal,
+                                  setOrdenesVendedorShowModal,
                                   datosSeleccionados,
                                   fetchData
                               }) => {
@@ -92,12 +92,12 @@ const OrdenesClientesModal = ({
                 const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
 
                 // si ya hay un cliente insertado, enviar mensaje de error indicando que no se puede insertar mas de un cliente
-                if (ordenExistente.cliente && Object.keys(ordenExistente.cliente).length > 0) {
-                    setMensajeErrorAlert("Ya existe un cliente en la orden");
+                if (ordenExistente.vendedor && Object.keys(ordenExistente.vendedor).length > 0) {
+                    setMensajeErrorAlert("Ya existe un vendedor en la orden");
                     return;
                 }
 
-                ordenExistente.cliente = {
+                ordenExistente.vendedor = {
                     IdUsuarioOK: values.IdUsuarioOK,
                     IdPersonaOK: values.IdPersonaOK,
                     Usuario: values.Usuario,
@@ -122,12 +122,12 @@ const OrdenesClientesModal = ({
                 //console.log("<<Ordenes info ad>>", info_ad_data);
                 await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
 
-                setMensajeExitoAlert("Cliente creado y guardada Correctamente");
+                setMensajeExitoAlert("Vendedor creado y guardada Correctamente");
 
                 fetchData();
             } catch (e) {
                 setMensajeExitoAlert(null);
-                setMensajeErrorAlert("No se pudo Registrar");
+                setMensajeErrorAlert("No se pudo registrar el vendedor");
             }
             //FIC: ocultamos el Loading.
             setLoading(false);
@@ -145,8 +145,8 @@ const OrdenesClientesModal = ({
 
     return (
         <Dialog
-            open={OrdenesClientesShowModal}
-            onClose={() => setOrdenesClientesShowModal(false)}
+            open={OrdenesVendedorShowModal}
+            onClose={() => setOrdenesVendedorShowModal(false)}
             fullWidth
         >
             <form onSubmit={(e) => {
@@ -155,7 +155,7 @@ const OrdenesClientesModal = ({
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo cliente a la Orden</strong>
+                        <strong>Agregar Nuevo vendedor a la Orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
@@ -356,7 +356,7 @@ const OrdenesClientesModal = ({
                         loadingPosition="start"
                         startIcon={<CloseIcon/>}
                         variant="outlined"
-                        onClick={() => setOrdenesClientesShowModal(false)}
+                        onClick={() => setOrdenesVendedorShowModal(false)}
                     >
                         <span>CERRAR</span>
                     </LoadingButton>
@@ -376,4 +376,4 @@ const OrdenesClientesModal = ({
         </Dialog>
     );
 };
-export default OrdenesClientesModal;
+export default OrdenesVendedorModal;

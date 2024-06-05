@@ -22,12 +22,13 @@ import {OrdenesInfoAdValues} from "../../../helpers/OrdenesInfoAdValues.jsx";
 import {UpdatePatchOneOrder} from "../../../services/remote/put/UpdatePatchOneOrder";
 import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
 
-const OrdenesClientesModal = ({
-                                  OrdenesClientesShowModal,
-                                  setOrdenesClientesShowModal,
-                                  datosSeleccionados,
-                                  fetchData
-                              }) => {
+const OrdenesVendedorModalUpdate = ({
+                                        OrdenesVendedorShowModalUpdate,
+                                        setOrdenesVendedorShowModalUpdate,
+                                        datosSeleccionados,
+                                        dataRow,
+                                        fetchData
+                                    }) => {
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
     const [Loading, setLoading] = useState(false);
@@ -35,25 +36,25 @@ const OrdenesClientesModal = ({
     //FIC: Definition Formik y Yup.
     const formik = useFormik({
         initialValues: {
-            IdUsuarioOK: "",
-            IdPersonaOK: "",
-            Usuario: "",
-            Alias: "",
-            Nombre: "",
-            ApParterno: "",
-            ApMaterno: "",
-            FullUserName: "",
-            RFC: "",
-            CURP: "",
-            Sexo: "",
-            IdTipoPersonaOK: "",
-            FechaNac: "",
-            IdTipoEstatusOK: "",
-            IdRolActualOK: "",
-            IdRolPrincipalOK: "",
-            FotoPerfil: "",
-            Email: "",
-            TelMovil: "",
+            IdUsuarioOK: dataRow?.IdUsuarioOK || "",
+            IdPersonaOK: dataRow?.IdPersonaOK || "",
+            Usuario: dataRow?.Usuario || "",
+            Alias: dataRow?.Alias || "",
+            Nombre: dataRow?.Nombre || "",
+            ApParterno: dataRow?.ApParterno || "",
+            ApMaterno: dataRow?.ApMaterno || "",
+            FullUserName: dataRow?.FullUserName || "",
+            RFC: dataRow?.RFC || "",
+            CURP: dataRow?.CURP || "",
+            Sexo: dataRow?.Sexo || "",
+            IdTipoPersonaOK: dataRow?.IdTipoPersonaOK || "",
+            FechaNac: dataRow?.FechaNac || "",
+            IdTipoEstatusOK: dataRow?.IdTipoEstatusOK || "",
+            IdRolActualOK: dataRow?.IdRolActualOK || "",
+            IdRolPrincipalOK: dataRow?.IdRolPrincipalOK || "",
+            FotoPerfil: dataRow?.FotoPerfil || "",
+            Email: dataRow?.Email || "",
+            TelMovil: dataRow?.TelMovil || "",
         },
         validationSchema: Yup.object({
             IdUsuarioOK: Yup.string().required("Campo requerido"),
@@ -91,13 +92,7 @@ const OrdenesClientesModal = ({
 
                 const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
 
-                // si ya hay un cliente insertado, enviar mensaje de error indicando que no se puede insertar mas de un cliente
-                if (ordenExistente.cliente && Object.keys(ordenExistente.cliente).length > 0) {
-                    setMensajeErrorAlert("Ya existe un cliente en la orden");
-                    return;
-                }
-
-                ordenExistente.cliente = {
+                ordenExistente.vendedor = {
                     IdUsuarioOK: values.IdUsuarioOK,
                     IdPersonaOK: values.IdPersonaOK,
                     Usuario: values.Usuario,
@@ -122,12 +117,12 @@ const OrdenesClientesModal = ({
                 //console.log("<<Ordenes info ad>>", info_ad_data);
                 await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
 
-                setMensajeExitoAlert("Cliente creado y guardada Correctamente");
+                setMensajeExitoAlert("Vendedor actualizado y guardada Correctamente");
 
                 fetchData();
             } catch (e) {
                 setMensajeExitoAlert(null);
-                setMensajeErrorAlert("No se pudo Registrar");
+                setMensajeErrorAlert("No se pudo actualizar el vendedor");
             }
             //FIC: ocultamos el Loading.
             setLoading(false);
@@ -145,8 +140,8 @@ const OrdenesClientesModal = ({
 
     return (
         <Dialog
-            open={OrdenesClientesShowModal}
-            onClose={() => setOrdenesClientesShowModal(false)}
+            open={OrdenesVendedorShowModalUpdate}
+            onClose={() => setOrdenesVendedorShowModalUpdate(false)}
             fullWidth
         >
             <form onSubmit={(e) => {
@@ -155,7 +150,7 @@ const OrdenesClientesModal = ({
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo cliente a la Orden</strong>
+                        <strong>Agregar Nuevo vendedor a la Orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
@@ -356,7 +351,7 @@ const OrdenesClientesModal = ({
                         loadingPosition="start"
                         startIcon={<CloseIcon/>}
                         variant="outlined"
-                        onClick={() => setOrdenesClientesShowModal(false)}
+                        onClick={() => setOrdenesVendedorShowModalUpdate(false)}
                     >
                         <span>CERRAR</span>
                     </LoadingButton>
@@ -376,4 +371,4 @@ const OrdenesClientesModal = ({
         </Dialog>
     );
 };
-export default OrdenesClientesModal;
+export default OrdenesVendedorModalUpdate;

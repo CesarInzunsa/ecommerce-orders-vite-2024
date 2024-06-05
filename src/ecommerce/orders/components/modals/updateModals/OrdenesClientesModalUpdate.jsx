@@ -114,17 +114,15 @@ const OrdenesClientesModalUpdate = ({
                     TelMovil: values.TelMovil,
                 }
 
-                const info_ad_data = OrdenesInfoAdValues(values, ordenExistente);
-
                 //console.log("<<Ordenes info ad>>", info_ad_data);
-                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, info_ad_data);
+                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
 
-                setMensajeExitoAlert("Cliente creado y guardada Correctamente");
+                setMensajeExitoAlert("Cliente actualizado y guardada Correctamente");
 
                 fetchData();
             } catch (e) {
                 setMensajeExitoAlert(null);
-                setMensajeErrorAlert("No se pudo Registrar");
+                setMensajeErrorAlert("No se pudo actualizar el cliente");
             }
             //FIC: ocultamos el Loading.
             setLoading(false);

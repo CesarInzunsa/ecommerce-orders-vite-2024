@@ -11,6 +11,15 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 
 // DB
 import {GetOneOrder} from '../../../../services/remote/get/GetOneOrder.jsx';
+import OrdenesClientesModal from "../../../modals/patchModals/OrdenesClientesModal.jsx";
+import OrdenesVendedorModal from "../../../modals/patchModals/OrdenesVendedorModal.jsx";
+import {UpdatePatchOneOrder} from "../../../../services/remote/put/UpdatePatchOneOrder.jsx";
+import {
+    showMensajeConfirm,
+    showMensajeError
+} from "../../../../../../share/components/elements/messages/MySwalAlerts.jsx";
+import OrdenesVendedorModalUpdate from "../../../modals/updateModals/OrdenesVendedorModalUpdate.jsx";
+import OrdenesVendedorModalDetails from "../../../modals/detailsModals/OrdenesVendedorModalDetails.jsx";
 
 // Modals
 
@@ -125,10 +134,72 @@ const OrdenesVendedorTable = ({datosSeleccionados}) => {
     // Controlar el estado de la fila seleccionada.
     const [dataRow, setDataRow] = useState({});
 
+    // controlar modal insert vendedor
+    const [OrdenesVendedorShowModal, setOrdenesVendedorShowModal] = useState(false);
+
+    // controlar modal update vendedor
+    const [OrdenesVendedorShowModalUpdate, setOrdenesVendedorShowModalUpdate] = useState(false);
+
+    // controlar modal detials vendedor
+    const [OrdenesVendedorShowModalDetails, setOrdenesVendedorShowModalDetails] = useState(false);
+
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
         // Guardar la informacion seleccionada
         setDataRow(rowData.original);
+    };
+
+    // Funcion par eliminar estatus órdenes
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `El vendedor con el ID: ${
+                (dataRow.IdUsuarioOK)
+            } será eliminado, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                ordenExistente.vendedor = {
+                    IdUsuarioOK: "",
+                    IdPersonaOK: "",
+                    Usuario: "",
+                    Alias: "",
+                    Nombre: "",
+                    ApParterno: "",
+                    ApMaterno: "",
+                    FullUserName: "",
+                    RFC: "",
+                    CURP: "",
+                    Sexo: "",
+                    IdTipoPersonaOK: "",
+                    FechaNac: "",
+                    IdTipoEstatusOK: "",
+                    IdRolActualOK: "",
+                    IdRolPrincipalOK: "",
+                    FotoPerfil: "",
+                    Email: "",
+                    TelMovil: "",
+                };
+
+                // Actualiza el documento con el endpoint
+                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
+
+                // Mostrar mensaje de confirmación
+                await showMensajeConfirm("Vendedor eliminado con exito");
+
+                // Actualizar la data
+                await fetchData();
+
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar el vendedor`);
+            }
+        }
     };
 
     async function fetchData() {
@@ -178,27 +249,29 @@ const OrdenesVendedorTable = ({datosSeleccionados}) => {
                                 <Box>
                                     <Tooltip title="Agregar">
                                         <IconButton
-                                            //onClick={() => setOrdenesInfoAdShowModal(true)}
+                                            onClick={() => setOrdenesVendedorShowModal(true)}
                                         >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
                                         <IconButton
-                                            //onClick={() => setOrdenesUpdateInfoAdShowModal(true)}
+                                            onClick={() => setOrdenesVendedorShowModalUpdate(true)}
                                         >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
                                         <IconButton
-                                            //onClick={() => handleDelete()}
+                                            onClick={() => handleDelete()}
                                         >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesVendedorShowModalDetails(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -212,12 +285,41 @@ const OrdenesVendedorTable = ({datosSeleccionados}) => {
                             </Stack>
                             {/* ------- BARRA DE ACCIONES FIN ------ */}
                             {/* M O D A L E S */}
-                            {/*<Dialog open={OrdenesInfoAdShowModal}>*/}
+                            <Dialog open={OrdenesVendedorShowModal}>
+                                <OrdenesVendedorModal
+                                    OrdenesVendedorShowModal={OrdenesVendedorShowModal}
+                                    setOrdenesVendedorShowModal={setOrdenesVendedorShowModal}
+                                    datosSeleccionados={datosSeleccionados}
+                                    fetchData={fetchData}
+                                    onClose={() => {
+                                        setOrdenesVendedorShowModal(false)
+                                    }}
+                                />
+                            </Dialog>
 
-                            {/*</Dialog>*/}
-                            {/*<Dialog open={OrdenesUpdateInfoAdShowModal}>*/}
+                            <Dialog open={OrdenesVendedorShowModalUpdate}>
+                                <OrdenesVendedorModalUpdate
+                                    OrdenesVendedorShowModalUpdate={OrdenesVendedorShowModalUpdate}
+                                    setOrdenesVendedorShowModalUpdate={setOrdenesVendedorShowModalUpdate}
+                                    datosSeleccionados={datosSeleccionados}
+                                    fetchData={fetchData}
+                                    dataRow={dataRow}
+                                    onClose={() => {
+                                        setOrdenesVendedorShowModalUpdate(false)
+                                    }}
+                                />
+                            </Dialog>
 
-                            {/*</Dialog>*/}
+                            <Dialog open={OrdenesVendedorShowModalDetails}>
+                                <OrdenesVendedorModalDetails
+                                    OrdenesVendedorShowModalDetails={OrdenesVendedorShowModalDetails}
+                                    setOrdenesVendedorShowModalDetails={setOrdenesVendedorShowModalDetails}
+                                    dataRow={dataRow}
+                                    onClose={() => {
+                                        setOrdenesVendedorShowModalDetails(false)
+                                    }}
+                                />
+                            </Dialog>
                         </>
                     )}
                 />

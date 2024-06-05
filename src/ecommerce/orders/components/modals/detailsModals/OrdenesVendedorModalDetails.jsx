@@ -22,12 +22,11 @@ import {OrdenesInfoAdValues} from "../../../helpers/OrdenesInfoAdValues.jsx";
 import {UpdatePatchOneOrder} from "../../../services/remote/put/UpdatePatchOneOrder";
 import {GetOneOrder} from "../../../services/remote/get/GetOneOrder.jsx";
 
-const OrdenesClientesModal = ({
-                                  OrdenesClientesShowModal,
-                                  setOrdenesClientesShowModal,
-                                  datosSeleccionados,
-                                  fetchData
-                              }) => {
+const OrdenesVendedorModalDetails = ({
+                                        OrdenesVendedorShowModalDetails,
+                                        setOrdenesVendedorShowModalDetails,
+                                        dataRow
+                                    }) => {
     const [mensajeErrorAlert, setMensajeErrorAlert] = useState("");
     const [mensajeExitoAlert, setMensajeExitoAlert] = useState("");
     const [Loading, setLoading] = useState(false);
@@ -35,25 +34,25 @@ const OrdenesClientesModal = ({
     //FIC: Definition Formik y Yup.
     const formik = useFormik({
         initialValues: {
-            IdUsuarioOK: "",
-            IdPersonaOK: "",
-            Usuario: "",
-            Alias: "",
-            Nombre: "",
-            ApParterno: "",
-            ApMaterno: "",
-            FullUserName: "",
-            RFC: "",
-            CURP: "",
-            Sexo: "",
-            IdTipoPersonaOK: "",
-            FechaNac: "",
-            IdTipoEstatusOK: "",
-            IdRolActualOK: "",
-            IdRolPrincipalOK: "",
-            FotoPerfil: "",
-            Email: "",
-            TelMovil: "",
+            IdUsuarioOK: dataRow?.IdUsuarioOK || "",
+            IdPersonaOK: dataRow?.IdPersonaOK || "",
+            Usuario: dataRow?.Usuario || "",
+            Alias: dataRow?.Alias || "",
+            Nombre: dataRow?.Nombre || "",
+            ApParterno: dataRow?.ApParterno || "",
+            ApMaterno: dataRow?.ApMaterno || "",
+            FullUserName: dataRow?.FullUserName || "",
+            RFC: dataRow?.RFC || "",
+            CURP: dataRow?.CURP || "",
+            Sexo: dataRow?.Sexo || "",
+            IdTipoPersonaOK: dataRow?.IdTipoPersonaOK || "",
+            FechaNac: dataRow?.FechaNac || "",
+            IdTipoEstatusOK: dataRow?.IdTipoEstatusOK || "",
+            IdRolActualOK: dataRow?.IdRolActualOK || "",
+            IdRolPrincipalOK: dataRow?.IdRolPrincipalOK || "",
+            FotoPerfil: dataRow?.FotoPerfil || "",
+            Email: dataRow?.Email || "",
+            TelMovil: dataRow?.TelMovil || "",
         },
         validationSchema: Yup.object({
             IdUsuarioOK: Yup.string().required("Campo requerido"),
@@ -76,62 +75,7 @@ const OrdenesClientesModal = ({
             Email: Yup.string().required("Campo requerido").email("Email inválido"),
             TelMovil: Yup.string().required("Campo requerido"),
         }),
-        onSubmit: async (values) => {
-            //FIC: mostramos el Loading.
-            setMensajeExitoAlert("");
-            setMensajeErrorAlert("");
-            setLoading(true);
-
-            //FIC: reiniciamos los estados de las alertas de exito y error.
-            setMensajeErrorAlert(null);
-            setMensajeExitoAlert(null);
-            try {
-
-                const {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
-
-                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
-
-                // si ya hay un cliente insertado, enviar mensaje de error indicando que no se puede insertar mas de un cliente
-                if (ordenExistente.cliente && Object.keys(ordenExistente.cliente).length > 0) {
-                    setMensajeErrorAlert("Ya existe un cliente en la orden");
-                    return;
-                }
-
-                ordenExistente.cliente = {
-                    IdUsuarioOK: values.IdUsuarioOK,
-                    IdPersonaOK: values.IdPersonaOK,
-                    Usuario: values.Usuario,
-                    Alias: values.Alias,
-                    Nombre: values.Nombre,
-                    ApParterno: values.ApParterno,
-                    ApMaterno: values.ApMaterno,
-                    FullUserName: values.FullUserName,
-                    RFC: values.RFC,
-                    CURP: values.CURP,
-                    Sexo: values.Sexo,
-                    IdTipoPersonaOK: values.IdTipoPersonaOK,
-                    FechaNac: values.FechaNac,
-                    IdTipoEstatusOK: values.IdTipoEstatusOK,
-                    IdRolActualOK: values.IdRolActualOK,
-                    IdRolPrincipalOK: values.IdRolPrincipalOK,
-                    FotoPerfil: values.FotoPerfil,
-                    Email: values.Email,
-                    TelMovil: values.TelMovil,
-                }
-
-                //console.log("<<Ordenes info ad>>", info_ad_data);
-                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
-
-                setMensajeExitoAlert("Cliente creado y guardada Correctamente");
-
-                fetchData();
-            } catch (e) {
-                setMensajeExitoAlert(null);
-                setMensajeErrorAlert("No se pudo Registrar");
-            }
-            //FIC: ocultamos el Loading.
-            setLoading(false);
-        },
+        onSubmit: async (values) => {},
     });
 
     //FIC: props structure for TextField Control.
@@ -145,8 +89,8 @@ const OrdenesClientesModal = ({
 
     return (
         <Dialog
-            open={OrdenesClientesShowModal}
-            onClose={() => setOrdenesClientesShowModal(false)}
+            open={OrdenesVendedorShowModalDetails}
+            onClose={() => setOrdenesVendedorShowModalDetails(false)}
             fullWidth
         >
             <form onSubmit={(e) => {
@@ -155,7 +99,7 @@ const OrdenesClientesModal = ({
                 {/* FIC: Aqui va el Titulo de la Modal */}
                 <DialogTitle>
                     <Typography>
-                        <strong>Agregar Nuevo cliente a la Orden</strong>
+                        <strong>Detalles - vendedor a la Orden</strong>
                     </Typography>
                 </DialogTitle>
                 {/* FIC: Aqui va un tipo de control por cada Propiedad de Institutos */}
@@ -170,6 +114,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.IdUsuarioOK && Boolean(formik.errors.IdUsuarioOK)}
                         helperText={formik.touched.IdUsuarioOK && formik.errors.IdUsuarioOK}
+                        disabled={true}
                     />
 
                     <TextField
@@ -179,6 +124,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.IdPersonaOK && Boolean(formik.errors.IdPersonaOK)}
                         helperText={formik.touched.IdPersonaOK && formik.errors.IdPersonaOK}
+                        disabled={true}
                     />
 
                     <TextField
@@ -188,6 +134,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.Usuario && Boolean(formik.errors.Usuario)}
                         helperText={formik.touched.Usuario && formik.errors.Usuario}
+                        disabled={true}
                     />
 
                     <TextField
@@ -197,6 +144,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.Alias && Boolean(formik.errors.Alias)}
                         helperText={formik.touched.Alias && formik.errors.Alias}
+                        disabled={true}
                     />
 
                     <TextField
@@ -206,6 +154,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.Nombre && Boolean(formik.errors.Nombre)}
                         helperText={formik.touched.Nombre && formik.errors.Nombre}
+                        disabled={true}
                     />
 
                     <TextField
@@ -215,6 +164,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.ApParterno && Boolean(formik.errors.ApParterno)}
                         helperText={formik.touched.ApParterno && formik.errors.ApParterno}
+                        disabled={true}
                     />
 
                     <TextField
@@ -224,6 +174,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.ApMaterno && Boolean(formik.errors.ApMaterno)}
                         helperText={formik.touched.ApMaterno && formik.errors.ApMaterno}
+                        disabled={true}
                     />
 
                     <TextField
@@ -233,6 +184,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.FullUserName && Boolean(formik.errors.FullUserName)}
                         helperText={formik.touched.FullUserName && formik.errors.FullUserName}
+                        disabled={true}
                     />
 
                     <TextField
@@ -242,6 +194,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.RFC && Boolean(formik.errors.RFC)}
                         helperText={formik.touched.RFC && formik.errors.RFC}
+                        disabled={true}
                     />
 
                     <TextField
@@ -251,6 +204,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.CURP && Boolean(formik.errors.CURP)}
                         helperText={formik.touched.CURP && formik.errors.CURP}
+                        disabled={true}
                     />
 
                     <TextField
@@ -260,6 +214,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.Sexo && Boolean(formik.errors.Sexo)}
                         helperText={formik.touched.Sexo && formik.errors.Sexo}
+                        disabled={true}
                     />
 
                     <TextField
@@ -269,6 +224,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.IdTipoPersonaOK && Boolean(formik.errors.IdTipoPersonaOK)}
                         helperText={formik.touched.IdTipoPersonaOK && formik.errors.IdTipoPersonaOK}
+                        disabled={true}
                     />
 
                     <TextField
@@ -278,6 +234,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.FechaNac && Boolean(formik.errors.FechaNac)}
                         helperText={formik.touched.FechaNac && formik.errors.FechaNac}
+                        disabled={true}
                     />
 
                     <TextField
@@ -287,6 +244,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.IdTipoEstatusOK && Boolean(formik.errors.IdTipoEstatusOK)}
                         helperText={formik.touched.IdTipoEstatusOK && formik.errors.IdTipoEstatusOK}
+                        disabled={true}
                     />
 
                     <TextField
@@ -296,6 +254,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.IdRolActualOK && Boolean(formik.errors.IdRolActualOK)}
                         helperText={formik.touched.IdRolActualOK && formik.errors.IdRolActualOK}
+                        disabled={true}
                     />
 
                     <TextField
@@ -305,6 +264,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.IdRolPrincipalOK && Boolean(formik.errors.IdRolPrincipalOK)}
                         helperText={formik.touched.IdRolPrincipalOK && formik.errors.IdRolPrincipalOK}
+                        disabled={true}
                     />
 
                     <TextField
@@ -314,6 +274,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.FotoPerfil && Boolean(formik.errors.FotoPerfil)}
                         helperText={formik.touched.FotoPerfil && formik.errors.FotoPerfil}
+                        disabled={true}
                     />
 
                     <TextField
@@ -323,6 +284,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.Email && Boolean(formik.errors.Email)}
                         helperText={formik.touched.Email && formik.errors.Email}
+                        disabled={true}
                     />
 
                     <TextField
@@ -332,6 +294,7 @@ const OrdenesClientesModal = ({
                         {...commonTextFieldProps}
                         error={formik.touched.TelMovil && Boolean(formik.errors.TelMovil)}
                         helperText={formik.touched.TelMovil && formik.errors.TelMovil}
+                        disabled={true}
                     />
                 </DialogContent>
                 {/* FIC: Aqui van las acciones del usuario como son las alertas o botones */}
@@ -356,24 +319,13 @@ const OrdenesClientesModal = ({
                         loadingPosition="start"
                         startIcon={<CloseIcon/>}
                         variant="outlined"
-                        onClick={() => setOrdenesClientesShowModal(false)}
+                        onClick={() => setOrdenesVendedorShowModalDetails(false)}
                     >
                         <span>CERRAR</span>
-                    </LoadingButton>
-                    {/* FIC: Boton de Guardar. */}
-                    <LoadingButton
-                        color="primary"
-                        loadingPosition="start"
-                        startIcon={<SaveIcon/>}
-                        variant="contained"
-                        type="submit"
-                        disabled={formik.isSubmitting || !!mensajeExitoAlert || Loading}
-                    >
-                        <span>GUARDAR</span>
                     </LoadingButton>
                 </DialogActions>
             </form>
         </Dialog>
     );
 };
-export default OrdenesClientesModal;
+export default OrdenesVendedorModalDetails;
