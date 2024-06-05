@@ -11,6 +11,14 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 
 // DB
 import {GetOneOrder} from '../../../../services/remote/get/GetOneOrder.jsx';
+import OrdenesEnviosModal from "../../../modals/patchModals/OrdenesEnviosModal.jsx";
+import OrdenesEnviosModalUpdate from "../../../modals/updateModals/OrdenesEnviosModalUpdate.jsx";
+import OrdenesEnviosModalDetails from "../../../modals/detailsModals/OrdenesEnviosModalDetails.jsx";
+import {UpdatePatchOneOrder} from "../../../../services/remote/put/UpdatePatchOneOrder.jsx";
+import {
+    showMensajeConfirm,
+    showMensajeError
+} from "../../../../../../share/components/elements/messages/MySwalAlerts.jsx";
 
 // Modals
 
@@ -50,6 +58,15 @@ const OrdenesEnviosTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
     // Controlar el estado de la fila seleccionada.
     const [dataRow, setDataRow] = useState({});
 
+    // control modal OrdenesEnvios
+    const [OrdenesEnviosShowModal, setOrdenesEnviosShowModal] = useState(false);
+
+    // control modal ordenes envios update
+    const [OrdenesEnviosShowModalUpdate, setOrdenesEnviosShowModalUpdate] = useState(false);
+
+    // control modal ordenes details
+    const [OrdenesEnviosShowModalDetails, setOrdenesEnviosShowModalDetails] = useState(false);
+
     // Función para manejar el clic en una fila
     const sendDataRow = (rowData) => {
         // Guardar la informacion seleccionada
@@ -88,6 +105,45 @@ const OrdenesEnviosTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
         fetchData();
     }, []);
 
+    // Funcion par eliminar envios ordenes
+    const handleDelete = async () => {
+        const res = await showMensajeConfirm(
+            `El envio con el ID: ${
+                (dataRow.IdDomicilioOK)
+            } será eliminado, ¿Desea continuar?`
+        );
+        if (res) {
+            try {
+                // Obtener los id's seleccionados del documento principal
+                let {IdInstitutoOK, IdNegocioOK, IdOrdenOK} = datosSeleccionados;
+
+                // Obtener toda la información del documento que se quiere actualizar su subdocumento
+                const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
+
+                // buscar el indice del envio seleccionado
+
+                const indexEnvio = ordenExistente.envios.findIndex((envio) => {
+                    return envio.IdDomicilioOK === dataRow.IdDomicilioOK;
+                });
+
+                ordenExistente.envios.splice(indexEnvio, 1);
+
+                // Actualiza el documento con el endpoint
+                await UpdatePatchOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK, ordenExistente);
+
+                // Mostrar mensaje de confirmación
+                await showMensajeConfirm("Envio eliminado con exito");
+
+                // Actualizar la data
+                await fetchData();
+
+            } catch (e) {
+                console.error("handleDelete", e);
+                showMensajeError(`No se pudo eliminar el envio`);
+            }
+        }
+    };
+
     return (
         <Box>
             <Box>
@@ -110,27 +166,29 @@ const OrdenesEnviosTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
                                 <Box>
                                     <Tooltip title="Agregar">
                                         <IconButton
-                                            //onClick={() => setOrdenesInfoAdShowModal(true)}
+                                            onClick={() => setOrdenesEnviosShowModal(true)}
                                         >
                                             <AddCircleIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Editar">
                                         <IconButton
-                                            //onClick={() => setOrdenesUpdateInfoAdShowModal(true)}
+                                            onClick={() => setOrdenesEnviosShowModalUpdate(true)}
                                         >
                                             <EditIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Eliminar">
                                         <IconButton
-                                            //onClick={() => handleDelete()}
+                                            onClick={() => handleDelete()}
                                         >
                                             <DeleteIcon/>
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Detalles ">
-                                        <IconButton>
+                                        <IconButton
+                                            onClick={() => setOrdenesEnviosShowModalDetails(true)}
+                                        >
                                             <InfoIcon/>
                                         </IconButton>
                                     </Tooltip>
@@ -144,12 +202,35 @@ const OrdenesEnviosTable = ({datosSeleccionados, setDatosSecSubdoc}) => {
                             </Stack>
                             {/* ------- BARRA DE ACCIONES FIN ------ */}
                             {/* M O D A L E S */}
-                            {/*<Dialog open={OrdenesInfoAdShowModal}>*/}
+                            <Dialog open={OrdenesEnviosShowModal}>
+                                <OrdenesEnviosModal
+                                    OrdenesEnviosShowModal={OrdenesEnviosShowModal}
+                                    setOrdenesEnviosShowModal={setOrdenesEnviosShowModal}
+                                    datosSeleccionados={datosSeleccionados}
+                                    onClose={() => setOrdenesEnviosShowModal(false)}
+                                    fetchData={fetchData}
+                                />
+                            </Dialog>
 
-                            {/*</Dialog>*/}
-                            {/*<Dialog open={OrdenesUpdateInfoAdShowModal}>*/}
+                            <Dialog open={OrdenesEnviosShowModalUpdate}>
+                                <OrdenesEnviosModalUpdate
+                                    OrdenesEnviosShowModalUpdate={OrdenesEnviosShowModalUpdate}
+                                    setOrdenesEnviosShowModalUpdate={setOrdenesEnviosShowModalUpdate}
+                                    datosSeleccionados={datosSeleccionados}
+                                    onClose={() => setOrdenesEnviosShowModalUpdate(false)}
+                                    fetchData={fetchData}
+                                    dataRow={dataRow}
+                                />
+                            </Dialog>
 
-                            {/*</Dialog>*/}
+                            <Dialog open={OrdenesEnviosShowModalDetails}>
+                                <OrdenesEnviosModalDetails
+                                    OrdenesEnviosShowModalDetails={OrdenesEnviosShowModalDetails}
+                                    setOrdenesEnviosShowModalDetails={setOrdenesEnviosShowModalDetails}
+                                    onClose={() => setOrdenesEnviosShowModalDetails(false)}
+                                    dataRow={dataRow}
+                                />
+                            </Dialog>
                         </>
                     )}
                 />

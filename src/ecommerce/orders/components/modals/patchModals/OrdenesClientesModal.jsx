@@ -91,8 +91,10 @@ const OrdenesClientesModal = ({
 
                 const ordenExistente = await GetOneOrder(IdInstitutoOK, IdNegocioOK, IdOrdenOK);
 
-                // si ya hay un cliente insertado, enviar mensaje de error indicando que no se puede insertar mas de un cliente
-                if (ordenExistente.cliente && Object.keys(ordenExistente.cliente).length > 0) {
+                // Verificar si todos los campos en el subdocumento cliente son cadenas vacías
+                const clienteVacio = Object.values(ordenExistente.cliente).every(value => value === "");
+
+                if (!clienteVacio) {
                     setMensajeErrorAlert("Ya existe un cliente en la orden");
                     return;
                 }
